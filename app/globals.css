@@ -14,8 +14,11 @@
     @apply bg-surface-card border border-line rounded-card shadow-card;
   }
   .btn {
+    /* Feedback no toque, nao na soltura do botao (resposta instantanea). */
     @apply inline-flex items-center gap-2 rounded-control px-4 py-2 text-label
-           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+           transition-[background-color,color,transform] duration-150
+           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed
+           disabled:active:scale-100;
   }
   .btn-primary {
     @apply btn bg-brand-600 text-white hover:bg-brand-700;
@@ -25,10 +28,20 @@
   }
   .field {
     @apply w-full rounded-control border border-line bg-surface-card px-3 py-2
-           text-body outline-none focus:border-brand-500
+           text-body outline-none transition-colors focus:border-brand-500
            focus:ring-4 focus:ring-brand-50;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-1 text-caption font-medium;
+  }
+  /* Camada de material translucido para overlays (modal, sheet). */
+  .scrim {
+    @apply bg-black/40 backdrop-blur-[2px];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    @apply active:scale-100;
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { supabase, supabaseConfigurado } from "@/lib/supabase";
 import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
 import { aprovacoesMock, responsaveis } from "@/lib/mock";
@@ -155,14 +156,17 @@ export default function Painel() {
 
       {aba === "checklists" && <Checklists responsaveis={responsaveis} />}
 
-      {selecionado && (
-        <DetalheAluno
-          aprovacao={selecionado}
-          responsaveis={responsaveis}
-          onFechar={() => setSelecionado(null)}
-          onAtualizar={atualizar}
-        />
-      )}
+      <AnimatePresence>
+        {selecionado && (
+          <DetalheAluno
+            key={selecionado.id}
+            aprovacao={selecionado}
+            responsaveis={responsaveis}
+            onFechar={() => setSelecionado(null)}
+            onAtualizar={atualizar}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }

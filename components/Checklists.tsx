@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Item = { id: string; texto: string; feito: boolean; responsavel: string };
 
@@ -63,35 +64,42 @@ function Coluna({
       </div>
 
       <ul className="space-y-1">
-        {itens.map((i) => (
-          <li
-            key={i.id}
-            className="flex items-center gap-2 border-b border-line py-2 last:border-0"
-          >
-            <input
-              type="checkbox"
-              checked={i.feito}
-              onChange={() => toggle(i.id)}
-              className="h-4 w-4 accent-brand-600"
-            />
-            <span
-              className={`flex-1 text-body ${
-                i.feito ? "text-ink-muted line-through" : ""
-              }`}
+        <AnimatePresence initial={false}>
+          {itens.map((i) => (
+            <motion.li
+              key={i.id}
+              layout
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="flex items-center gap-2 border-b border-line py-2 last:border-0"
             >
-              {i.texto}
-            </span>
-            <select
-              className="rounded-control border border-line bg-surface-card px-2 py-1 text-caption"
-              value={i.responsavel}
-              onChange={(e) => setResp(i.id, e.target.value)}
-            >
-              {responsaveis.map((r) => (
-                <option key={r}>{r}</option>
-              ))}
-            </select>
-          </li>
-        ))}
+              <input
+                type="checkbox"
+                checked={i.feito}
+                onChange={() => toggle(i.id)}
+                className="h-4 w-4 accent-brand-600"
+              />
+              <span
+                className={`flex-1 text-body transition-colors duration-200 ${
+                  i.feito ? "text-ink-muted line-through" : ""
+                }`}
+              >
+                {i.texto}
+              </span>
+              <select
+                className="rounded-control border border-line bg-surface-card px-2 py-1 text-caption"
+                value={i.responsavel}
+                onChange={(e) => setResp(i.id, e.target.value)}
+              >
+                {responsaveis.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </motion.li>
+          ))}
+        </AnimatePresence>
       </ul>
 
       <div className="mt-3 flex gap-2">

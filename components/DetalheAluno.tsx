@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
 
 export function DetalheAluno({
@@ -52,9 +53,29 @@ export function DetalheAluno({
     onFechar();
   }
 
+  const reduzMovimento = useReducedMotion();
+  const materializar = reduzMovimento
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+        initial: { opacity: 0, scale: 0.96, y: 8 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.96, y: 8 },
+      };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 py-10">
-      <div className="card w-full max-w-2xl p-6 shadow-pop">
+    <motion.div
+      className="scrim fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={(e) => e.target === e.currentTarget && onFechar()}
+    >
+      <motion.div
+        className="card w-full max-w-2xl p-6 shadow-pop"
+        {...materializar}
+        transition={{ type: "spring", bounce: reduzMovimento ? 0 : 0.15, duration: 0.35 }}
+      >
         <div className="mb-5 flex items-start justify-between">
           <div>
             <h2 className="text-title">{aprovacao.nome}</h2>
@@ -63,13 +84,14 @@ export function DetalheAluno({
               {aprovacao.uf}
             </p>
           </div>
-          <button
+          <motion.button
             onClick={onFechar}
+            whileTap={reduzMovimento ? undefined : { scale: 0.9 }}
             className="text-ink-muted hover:text-ink text-xl leading-none"
             aria-label="Fechar"
           >
             ×
-          </button>
+          </motion.button>
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -149,7 +171,7 @@ export function DetalheAluno({
             Salvar depoimento
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

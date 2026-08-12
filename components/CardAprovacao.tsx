@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, useReducedMotion } from "framer-motion";
 import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
 
 const STATUS: Record<
@@ -28,10 +29,14 @@ export function CardAprovacao({
   onClick: () => void;
 }) {
   const s = STATUS[aprovacao.status];
+  const reduzMovimento = useReducedMotion();
   return (
-    <button
+    <motion.button
       onClick={onClick}
       className="card flex w-full items-center gap-3 p-3 text-left hover:border-line-strong transition-colors"
+      whileTap={reduzMovimento ? undefined : { scale: 0.98 }}
+      whileHover={reduzMovimento ? undefined : { y: -1 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-label text-brand-700">
         {iniciais(aprovacao.nome)}
@@ -53,6 +58,6 @@ export function CardAprovacao({
       <span className={`badge ${s.classe} min-w-[92px] justify-center`}>
         {s.texto}
       </span>
-    </button>
+    </motion.button>
   );
 }

@@ -54,12 +54,13 @@ const config: Config = {
         pop: "0 8px 24px rgba(16,16,20,0.10)",
       },
       fontSize: {
-        // Escala tipografica intencional
-        display: ["28px", { lineHeight: "1.2", fontWeight: "600" }],
-        title: ["20px", { lineHeight: "1.3", fontWeight: "600" }],
-        body: ["15px", { lineHeight: "1.6", fontWeight: "400" }],
-        label: ["13px", { lineHeight: "1.4", fontWeight: "500" }],
-        caption: ["12px", { lineHeight: "1.4", fontWeight: "400" }],
+        // Escala tipografica intencional: tracking aperta em texto grande
+        // e abre levemente em texto pequeno (HIG, "The Details of UI Typography").
+        display: ["28px", { lineHeight: "1.2", fontWeight: "600", letterSpacing: "-0.02em" }],
+        title: ["20px", { lineHeight: "1.3", fontWeight: "600", letterSpacing: "-0.01em" }],
+        body: ["15px", { lineHeight: "1.6", fontWeight: "400", letterSpacing: "0" }],
+        label: ["13px", { lineHeight: "1.4", fontWeight: "500", letterSpacing: "0.01em" }],
+        caption: ["12px", { lineHeight: "1.4", fontWeight: "400", letterSpacing: "0.01em" }],
       },
     },
   },
