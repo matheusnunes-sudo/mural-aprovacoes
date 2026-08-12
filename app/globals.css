@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-canvas text-ink antialiased;
+  }
+}
+
+@layer components {
+  /* Componentes base reutilizaveis. Editar aqui propaga pro app inteiro. */
+  .card {
+    @apply bg-surface-card border border-line rounded-card shadow-card;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-control px-4 py-2 text-label
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+  }
+  .btn-ghost {
+    @apply btn border border-line-strong text-ink hover:bg-surface-sunken;
+  }
+  .field {
+    @apply w-full rounded-control border border-line bg-surface-card px-3 py-2
+           text-body outline-none focus:border-brand-500
+           focus:ring-4 focus:ring-brand-50;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-caption font-medium;
+  }
+}
