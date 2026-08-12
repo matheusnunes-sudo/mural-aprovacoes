@@ -2,18 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase, supabaseConfigurado } from "@/lib/supabase";
+import {
+  supabase,
+  supabaseConfigurado,
+  emailValido,
+  normalizarEmail,
+} from "@/lib/supabase";
+import { CampoUpload } from "@/components/CampoUpload";
 
 export default function FormularioAluno() {
   const router = useRouter();
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroEmail, setErroEmail] = useState<string | null>(null);
   const [form, setForm] = useState({
     nome: "",
+    email: "",
     curso: "",
     faculdade: "",
-    cidade: "",
-    uf: "",
     depoimento: "",
   });
 
@@ -21,21 +27,36 @@ export default function FormularioAluno() {
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
+  // Validacao inline: avisa ao sair do campo, nao so no envio.
+  function validarEmail() {
+    if (!form.email.trim()) {
+      setErroEmail(null);
+      return;
+    }
+    setErroEmail(emailValido(form.email) ? null : "Email invalido.");
+  }
+
   async function enviar() {
     setErro(null);
-    if (!form.nome || !form.curso || !form.faculdade || !form.depoimento) {
-      setErro("Preencha nome, curso, faculdade e depoimento.");
+    if (!form.nome || !form.email || !form.curso || !form.faculdade || !form.depoimento) {
+      setErro("Preencha nome, email, curso, faculdade e depoimento.");
+      return;
+    }
+    if (!emailValido(form.email)) {
+      setErroEmail("Email invalido.");
+      setErro("Confira o email antes de enviar.");
       return;
     }
     setEnviando(true);
 
     if (supabaseConfigurado && supabase) {
+      // Os arquivos escolhidos ainda nao sao enviados: foto_url e
+      // comprovante_url ficam nulos ate o Supabase Storage entrar (V2).
       const { error } = await supabase.from("aprovacoes").insert({
         nome: form.nome,
+        email: normalizarEmail(form.email),
         curso: form.curso,
         faculdade: form.faculdade,
-        cidade: form.cidade,
-        uf: form.uf,
         depoimento_original: form.depoimento,
         status: "pendente",
       });
@@ -73,6 +94,31 @@ export default function FormularioAluno() {
           />
         </Campo>
 
+        <Campo label="Email" obrigatorio>
+          <input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            className="field"
+            value={form.email}
+            onChange={(e) => {
+              set("email", e.target.value);
+              if (erroEmail) setErroEmail(null);
+            }}
+            onBlur={validarEmail}
+            placeholder="voce@email.com"
+          />
+          {erroEmail ? (
+            <span className="text-caption text-warning-fg mt-1.5 block">
+              {erroEmail}
+            </span>
+          ) : (
+            <span className="text-caption text-ink-muted mt-1.5 block">
+              Use o mesmo email se quiser enviar outra aprovacao depois.
+            </span>
+          )}
+        </Campo>
+
         <div className="grid grid-cols-2 gap-4">
           <Campo label="Curso" obrigatorio>
             <input
@@ -92,26 +138,6 @@ export default function FormularioAluno() {
           </Campo>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Campo label="Cidade">
-            <input
-              className="field"
-              value={form.cidade}
-              onChange={(e) => set("cidade", e.target.value)}
-              placeholder="Salvador"
-            />
-          </Campo>
-          <Campo label="Estado">
-            <input
-              className="field"
-              value={form.uf}
-              onChange={(e) => set("uf", e.target.value.toUpperCase())}
-              maxLength={2}
-              placeholder="BA"
-            />
-          </Campo>
-        </div>
-
         <Campo label="Seu depoimento" obrigatorio>
           <textarea
             className="field min-h-[120px] resize-y"
@@ -121,14 +147,19 @@ export default function FormularioAluno() {
           />
         </Campo>
 
-        <div className="rounded-control bg-surface-sunken p-4 text-caption text-ink-soft">
-          O upload de foto e comprovante entra na V2 (depende do Supabase
-          Storage). No MVP, a equipe anexa manualmente.
-        </div>
+        <CampoUpload
+          label="Sua foto"
+          accept="image/*"
+          dica="JPG ou PNG, ate 5 MB"
+        />
 
-        {erro && (
-          <p className="text-caption text-warning-fg">{erro}</p>
-        )}
+        <CampoUpload
+          label="Comprovante de aprovacao"
+          accept="image/*,application/pdf"
+          dica="Print, foto ou PDF, ate 5 MB"
+        />
+
+        {erro && <p className="text-caption text-warning-fg">{erro}</p>}
 
         <button
           className="btn-primary w-full justify-center"

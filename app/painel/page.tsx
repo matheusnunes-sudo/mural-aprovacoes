@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { supabase, supabaseConfigurado } from "@/lib/supabase";
-import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
+import type { Aprovacao } from "@/lib/supabase";
+import { agruparPorEmail } from "@/lib/agrupar";
 import { aprovacoesMock, responsaveis } from "@/lib/mock";
 import { PainelHeader } from "@/components/PainelHeader";
 import { CardAprovacao } from "@/components/CardAprovacao";
@@ -24,7 +25,9 @@ export default function Painel() {
 
   const [aba, setAba] = useState<Aba>("fila");
   const [dados, setDados] = useState<Aprovacao[]>([]);
-  const [selecionado, setSelecionado] = useState<Aprovacao | null>(null);
+  // Guarda o email, nao o objeto: assim o detalhe sempre reflete os dados
+  // atuais do aluno depois de uma edicao.
+  const [emailAberto, setEmailAberto] = useState<string | null>(null);
   const [fCurso, setFCurso] = useState("");
   const [fFac, setFFac] = useState("");
   const [fStatus, setFStatus] = useState("");
@@ -60,9 +63,12 @@ export default function Painel() {
       (!fStatus || d.status === fStatus)
   );
 
+  // A fila lista alunos: os envios do mesmo email aparecem juntos.
+  const grupos = agruparPorEmail(filtrados);
+  const grupoAberto = grupos.find((g) => g.email === emailAberto) || null;
+
   function atualizar(id: string, patch: Partial<Aprovacao>) {
     setDados((ds) => ds.map((d) => (d.id === id ? { ...d, ...patch } : d)));
-    setSelecionado((s) => (s && s.id === id ? { ...s, ...patch } : s));
     if (supabaseConfigurado && supabase) {
       supabase.from("aprovacoes").update(patch).eq("id", id);
     }
@@ -113,7 +119,7 @@ export default function Painel() {
       <PainelHeader
         aba={aba}
         onAba={setAba}
-        total={dados.length}
+        alunos={agruparPorEmail(dados).length}
         pendentes={dados.filter((d) => d.status === "pendente").length}
       />
 
@@ -142,10 +148,14 @@ export default function Painel() {
           </div>
 
           <div className="grid gap-3">
-            {filtrados.map((a) => (
-              <CardAprovacao key={a.id} aprovacao={a} onClick={() => setSelecionado(a)} />
+            {grupos.map((g) => (
+              <CardAprovacao
+                key={g.email}
+                grupo={g}
+                onClick={() => setEmailAberto(g.email)}
+              />
             ))}
-            {filtrados.length === 0 && (
+            {grupos.length === 0 && (
               <p className="text-body text-ink-muted py-8 text-center">
                 Nenhuma aprovacao com esses filtros.
               </p>
@@ -157,12 +167,12 @@ export default function Painel() {
       {aba === "checklists" && <Checklists responsaveis={responsaveis} />}
 
       <AnimatePresence>
-        {selecionado && (
+        {grupoAberto && (
           <DetalheAluno
-            key={selecionado.id}
-            aprovacao={selecionado}
+            key={grupoAberto.email}
+            grupo={grupoAberto}
             responsaveis={responsaveis}
-            onFechar={() => setSelecionado(null)}
+            onFechar={() => setEmailAberto(null)}
             onAtualizar={atualizar}
           />
         )}

@@ -2,14 +2,15 @@ import type { Aprovacao } from "./supabase";
 
 // Dados de exemplo. Substituidos automaticamente pelos dados reais
 // assim que o Supabase estiver configurado.
+// Julia Santos aparece duas vezes de proposito: e o caso de dois envios do
+// mesmo email, que o painel mostra agrupado.
 export const aprovacoesMock: Aprovacao[] = [
   {
     id: "1",
     nome: "Julia Santos",
+    email: "julia.santos@email.com",
     curso: "Medicina",
     faculdade: "UFBA",
-    cidade: "Salvador",
-    uf: "BA",
     depoimento_original:
       "eu estudei 2 anos no assaad e foi la que eu conseguir realizar meu sonho de passa em medicina, os profesor sao muito bom e me ajudaram bastante nessa jornada dificil",
     depoimento_corrigido: null,
@@ -20,12 +21,26 @@ export const aprovacoesMock: Aprovacao[] = [
     criado_em: "2026-08-10T09:00:00Z",
   },
   {
+    id: "6",
+    nome: "Julia Santos",
+    email: "julia.santos@email.com",
+    curso: "Medicina",
+    faculdade: "UFRB",
+    depoimento_original:
+      "passei tambem na ufrb, queria mandar essa segunda aprovacao pra voces",
+    depoimento_corrigido: null,
+    foto_url: null,
+    comprovante_url: null,
+    status: "pendente",
+    responsavel: null,
+    criado_em: "2026-08-11T19:30:00Z",
+  },
+  {
     id: "2",
     nome: "Pedro Lima",
+    email: "pedro.lima@email.com",
     curso: "Direito",
     faculdade: "USP",
-    cidade: "Sao Paulo",
-    uf: "SP",
     depoimento_original:
       "o assaad mudou minha vida, passei em direito na usp e sou muito grato por tudo",
     depoimento_corrigido:
@@ -39,10 +54,9 @@ export const aprovacoesMock: Aprovacao[] = [
   {
     id: "3",
     nome: "Ana Costa",
+    email: "ana.costa@email.com",
     curso: "Medicina",
     faculdade: "UFMG",
-    cidade: "Belo Horizonte",
-    uf: "MG",
     depoimento_original:
       "realizei o sonho de entrar em medicina depois de muito esforco e dedicacao com o apoio dos professores",
     depoimento_corrigido:
@@ -56,10 +70,9 @@ export const aprovacoesMock: Aprovacao[] = [
   {
     id: "4",
     nome: "Rafael Souza",
+    email: "rafael.souza@email.com",
     curso: "Engenharia",
     faculdade: "USP",
-    cidade: "Sao Paulo",
-    uf: "SP",
     depoimento_original:
       "estudar no assaad foi decisivo pra minha aprovacao em engenharia, recomendo demais",
     depoimento_corrigido: null,
@@ -72,10 +85,9 @@ export const aprovacoesMock: Aprovacao[] = [
   {
     id: "5",
     nome: "Mariana Alves",
+    email: "mariana.alves@email.com",
     curso: "Medicina",
     faculdade: "UFBA",
-    cidade: "Feira de Santana",
-    uf: "BA",
     depoimento_original:
       "passei em medicina na ufba e devo muito aos professores do assaad que sempre acreditaram em mim",
     depoimento_corrigido:

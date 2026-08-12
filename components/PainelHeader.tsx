@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 export function PainelHeader({
   aba,
   onAba,
-  total,
+  alunos,
   pendentes,
 }: {
   aba: "fila" | "checklists";
   onAba: (a: "fila" | "checklists") => void;
-  total: number;
+  alunos: number;
   pendentes: number;
 }) {
   return (
@@ -21,7 +21,7 @@ export function PainelHeader({
           <h1 className="text-display mt-1">Mural de aprovacoes</h1>
         </div>
         <div className="flex gap-3">
-          <Metrica label="Total" valor={total} />
+          <Metrica label="Alunos" valor={alunos} />
           <Metrica label="Pendentes" valor={pendentes} />
         </div>
       </div>

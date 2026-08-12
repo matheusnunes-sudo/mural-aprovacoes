@@ -6,12 +6,17 @@ para os times de IA e TI evoluirem.
 
 ## O que ja funciona
 
-- Formulario publico do aluno (`/`)
+- Formulario publico do aluno (`/`), com email validado
 - Painel da equipe (`/painel`) com senha simples de demonstracao
 - Fila de aprovacoes com filtros por curso, faculdade e status
+- Envios do mesmo email aparecem agrupados como um aluno so
 - Detalhe do aluno com correcao de depoimento por IA (antes/depois editavel)
 - Checklists de postagens e designs do dia, com responsavel por tarefa
 - Roda com dados de exemplo mesmo sem backend configurado
+
+Atencao: os campos de foto e comprovante sao demonstracao. O arquivo aparece
+na tela mas nao e salvo em lugar nenhum ate o Supabase Storage entrar (ver
+roadmap no `CLAUDE.md`).
 
 ## Rodar localmente
 
