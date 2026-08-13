@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { supabase, supabaseConfigurado } from "@/lib/supabase";
 import type { Aprovacao } from "@/lib/supabase";
 import { agruparPorEmail } from "@/lib/agrupar";
@@ -10,11 +10,11 @@ import { PainelHeader } from "@/components/PainelHeader";
 import { CardAprovacao } from "@/components/CardAprovacao";
 import { DetalheAluno } from "@/components/DetalheAluno";
 import { Checklists } from "@/components/Checklists";
+import { TemaToggle } from "@/components/TemaToggle";
 
 // Senha simples so para demonstracao (V1). A troca por auth real do
 // Supabase esta documentada no README como proximo passo.
-const SENHA_DEMO =
-  process.env.NEXT_PUBLIC_SENHA_PAINEL || "assaad2026";
+const SENHA_DEMO = process.env.NEXT_PUBLIC_SENHA_PAINEL || "assaad2026";
 
 type Aba = "fila" | "checklists";
 
@@ -31,6 +31,7 @@ export default function Painel() {
   const [fCurso, setFCurso] = useState("");
   const [fFac, setFFac] = useState("");
   const [fStatus, setFStatus] = useState("");
+  const reduzMovimento = useReducedMotion();
 
   useEffect(() => {
     async function carregar() {
@@ -74,12 +75,28 @@ export default function Painel() {
     }
   }
 
+  function entrar() {
+    if (senha === SENHA_DEMO) setAutorizado(true);
+    else setErroSenha(true);
+  }
+
   if (!autorizado) {
     return (
-      <main className="mx-auto flex min-h-screen max-w-sm items-center px-5">
-        <div className="card w-full p-6">
-          <h1 className="text-title">Painel da equipe</h1>
-          <p className="text-body text-ink-soft mt-1 mb-4">
+      <main className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center px-4 py-10">
+        <div className="mb-4 flex justify-end">
+          <TemaToggle />
+        </div>
+        <motion.div
+          className="glass p-6 sm:p-7"
+          initial={reduzMovimento ? { opacity: 0 } : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", bounce: 0, duration: 0.45 }}
+        >
+          <p className="text-label text-gradient font-semibold">
+            Assaad Educacao
+          </p>
+          <h1 className="text-display mt-1">Painel da equipe</h1>
+          <p className="text-body text-ink-soft mb-5 mt-2">
             Digite a senha de acesso.
           </p>
           <input
@@ -90,32 +107,22 @@ export default function Painel() {
               setSenha(e.target.value);
               setErroSenha(false);
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (senha === SENHA_DEMO) setAutorizado(true);
-                else setErroSenha(true);
-              }
-            }}
+            onKeyDown={(e) => e.key === "Enter" && entrar()}
             placeholder="Senha"
           />
           {erroSenha && (
             <p className="text-caption text-warning-fg mt-2">Senha incorreta.</p>
           )}
-          <button
-            className="btn-primary mt-4 w-full justify-center"
-            onClick={() =>
-              senha === SENHA_DEMO ? setAutorizado(true) : setErroSenha(true)
-            }
-          >
+          <button className="btn-primary mt-4 w-full py-3" onClick={entrar}>
             Entrar
           </button>
-        </div>
+        </motion.div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8">
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
       <PainelHeader
         aba={aba}
         onAba={setAba}
@@ -125,21 +132,36 @@ export default function Painel() {
 
       {aba === "fila" && (
         <>
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <span className="text-label text-ink-soft">Filtros</span>
-            <select className="field w-auto" value={fCurso} onChange={(e) => setFCurso(e.target.value)}>
+          <div className="mb-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <span className="text-label text-ink-soft sm:mr-1">Filtros</span>
+            <select
+              className="field sm:w-auto"
+              value={fCurso}
+              onChange={(e) => setFCurso(e.target.value)}
+              aria-label="Filtrar por curso"
+            >
               <option value="">Todos os cursos</option>
               {cursos.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
-            <select className="field w-auto" value={fFac} onChange={(e) => setFFac(e.target.value)}>
+            <select
+              className="field sm:w-auto"
+              value={fFac}
+              onChange={(e) => setFFac(e.target.value)}
+              aria-label="Filtrar por faculdade"
+            >
               <option value="">Toda faculdade</option>
               {faculdades.map((f) => (
                 <option key={f}>{f}</option>
               ))}
             </select>
-            <select className="field w-auto" value={fStatus} onChange={(e) => setFStatus(e.target.value)}>
+            <select
+              className="field sm:w-auto"
+              value={fStatus}
+              onChange={(e) => setFStatus(e.target.value)}
+              aria-label="Filtrar por status"
+            >
               <option value="">Todos status</option>
               <option value="pendente">Pendente</option>
               <option value="design_pronto">Design pronto</option>
@@ -156,7 +178,7 @@ export default function Painel() {
               />
             ))}
             {grupos.length === 0 && (
-              <p className="text-body text-ink-muted py-8 text-center">
+              <p className="text-body text-ink-muted py-10 text-center">
                 Nenhuma aprovacao com esses filtros.
               </p>
             )}

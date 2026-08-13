@@ -2,46 +2,270 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Tokens. Canais RGB para o Tailwind poder aplicar opacidade sobre eles.
+   Tema claro em :root, tema escuro em .dark (a classe e definida antes da
+   pintura pelo script em app/layout.tsx).
+--------------------------------------------------------------------------- */
 @layer base {
+  :root {
+    --surface-canvas: 232 232 237;
+    --surface-card: 255 255 255;
+    --surface-sunken: 241 241 245;
+
+    --ink: 16 16 20;
+    --ink-soft: 91 91 102;
+    --ink-muted: 145 145 158;
+    --ink-inverse: 255 255 255;
+
+    --line: 226 226 232;
+    --line-strong: 208 208 216;
+
+    --brand-50: 234 240 255;
+    --brand-100: 207 219 255;
+    --brand-500: 79 109 245;
+    --brand-600: 61 87 224;
+    --brand-700: 45 66 186;
+
+    --accent-warm: 253 184 116;
+    --accent-mid: 249 124 135;
+    --accent-cool: 92 107 245;
+
+    --warning-bg: 255 244 229;
+    --warning-fg: 178 94 0;
+    --success-bg: 231 246 236;
+    --success-fg: 27 127 66;
+    --info-bg: 234 240 255;
+    --info-fg: 45 66 186;
+
+    /* Vidro: superficie translucida que deixa o conteudo passar por baixo. */
+    --glass: 255 255 255;
+    --glass-alpha: 0.62;
+    --glass-edge: 255 255 255;
+    --glass-edge-alpha: 0.7;
+
+    --shadow-card: 0 1px 2px rgb(16 16 20 / 0.04), 0 6px 20px rgb(16 16 20 / 0.06);
+    --shadow-pop: 0 2px 6px rgb(16 16 20 / 0.06), 0 20px 50px rgb(16 16 20 / 0.14);
+    --shadow-press: inset 0 1px 2px rgb(16 16 20 / 0.08);
+  }
+
+  .dark {
+    --surface-canvas: 8 8 11;
+    --surface-card: 20 20 25;
+    --surface-sunken: 28 28 35;
+
+    --ink: 245 245 247;
+    --ink-soft: 160 160 172;
+    --ink-muted: 110 110 122;
+    --ink-inverse: 16 16 20;
+
+    --line: 38 38 46;
+    --line-strong: 53 53 63;
+
+    --brand-50: 30 34 62;
+    --brand-100: 40 47 88;
+    --brand-500: 122 143 255;
+    --brand-600: 107 128 255;
+    --brand-700: 145 163 255;
+
+    /* Um pouco mais saturado no escuro para o gradiente nao apagar. */
+    --accent-warm: 255 176 92;
+    --accent-mid: 255 106 122;
+    --accent-cool: 108 122 255;
+
+    --warning-bg: 58 41 16;
+    --warning-fg: 253 197 118;
+    --success-bg: 18 48 31;
+    --success-fg: 122 224 163;
+    --info-bg: 26 33 66;
+    --info-fg: 158 176 255;
+
+    --glass: 255 255 255;
+    --glass-alpha: 0.06;
+    --glass-edge: 255 255 255;
+    --glass-edge-alpha: 0.1;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+    --shadow-pop: 0 4px 12px rgb(0 0 0 / 0.5), 0 24px 60px rgb(0 0 0 / 0.6);
+    --shadow-press: inset 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+
+  html {
+    /* Troca de tema suave: o pulo claro<->escuro incomoda a vista. */
+    transition: background-color 300ms ease;
+  }
+
   body {
     @apply bg-surface-canvas text-ink antialiased;
+    font-optical-sizing: auto;
+  }
+
+  ::selection {
+    @apply bg-accent-mid/30;
+  }
+
+  /* Foco visivel e consistente para teclado, no lugar do anel do navegador.
+     Nunca remover sem repor: e a unica pista de posicao pra quem usa Tab. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent-cool));
+    outline-offset: 2px;
+  }
+  /* O mouse nao precisa do anel; os campos ja mostram foco pelo ring proprio. */
+  .field:focus-visible {
+    outline: none;
   }
 }
 
 @layer components {
-  /* Componentes base reutilizaveis. Editar aqui propaga pro app inteiro. */
+  /* --- Superficies ------------------------------------------------------ */
+
+  /* Cartao solido: para conteudo que precisa de leitura firme. */
   .card {
-    @apply bg-surface-card border border-line rounded-card shadow-card;
+    @apply rounded-card border border-line bg-surface-card shadow-card;
   }
+
+  /* Vidro: chrome flutuante, com o conteudo passando por baixo. Superficie
+     grande deve parecer mais "grossa": blur maior que um chip pequeno. */
+  .glass {
+    background: rgb(var(--glass) / var(--glass-alpha));
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
+    @apply rounded-card shadow-card;
+  }
+
+  /* Brilho ambiente do fundo (as referencias escuras vivem disso). */
+  .ambient {
+    @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
+  }
+  .ambient::before,
+  .ambient::after {
+    content: "";
+    @apply absolute rounded-full;
+    filter: blur(110px);
+  }
+  .ambient::before {
+    background: rgb(var(--accent-warm) / 0.26);
+    width: 30rem;
+    height: 30rem;
+    top: -13rem;
+    right: -9rem;
+  }
+  .ambient::after {
+    background: rgb(var(--accent-cool) / 0.18);
+    width: 32rem;
+    height: 32rem;
+    bottom: -15rem;
+    left: -11rem;
+  }
+  .dark .ambient::before {
+    background: rgb(var(--accent-mid) / 0.22);
+  }
+  .dark .ambient::after {
+    background: rgb(var(--accent-cool) / 0.24);
+  }
+
+  /* --- Controles -------------------------------------------------------- */
+
   .btn {
-    /* Feedback no toque, nao na soltura do botao (resposta instantanea). */
-    @apply inline-flex items-center gap-2 rounded-control px-4 py-2 text-label
-           transition-[background-color,color,transform] duration-150
-           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed
-           disabled:active:scale-100;
+    /* Feedback no toque, nao na soltura. */
+    @apply inline-flex items-center justify-center gap-2 rounded-pill px-5 py-2.5
+           text-label transition-[background-color,color,transform,box-shadow]
+           duration-150 active:scale-[0.97]
+           disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+    @apply btn bg-brand text-white;
+    box-shadow: 0 4px 14px rgb(var(--accent-cool) / 0.32);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgb(var(--accent-cool) / 0.42);
   }
   .btn-ghost {
-    @apply btn border border-line-strong text-ink hover:bg-surface-sunken;
+    @apply btn border border-line-strong bg-surface-card text-ink hover:bg-surface-sunken;
   }
+  .btn-quiet {
+    @apply btn text-ink-soft hover:bg-surface-sunken hover:text-ink;
+  }
+
   .field {
-    @apply w-full rounded-control border border-line bg-surface-card px-3 py-2
-           text-body outline-none transition-colors focus:border-brand-500
-           focus:ring-4 focus:ring-brand-50;
+    @apply w-full rounded-control border border-line bg-surface-card px-3.5 py-2.5
+           text-body text-ink outline-none transition-[border-color,box-shadow]
+           placeholder:text-ink-muted focus:border-brand-500
+           focus:ring-4 focus:ring-brand-500/15;
   }
+
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-caption font-medium;
+    @apply inline-flex items-center rounded-pill px-2.5 py-1 text-caption font-medium;
   }
-  /* Camada de material translucido para overlays (modal, sheet). */
+
+  /* Scrim do modal: escurece e desfoca o que fica atras. */
   .scrim {
-    @apply bg-black/40 backdrop-blur-[2px];
+    @apply bg-ink/40 backdrop-blur-md;
+  }
+  .dark .scrim {
+    @apply bg-black/65;
+  }
+
+  /* --- Realces ---------------------------------------------------------- */
+
+  /* Texto pintado pelo gradiente-assinatura. */
+  .text-gradient {
+    @apply bg-brand bg-clip-text text-transparent;
+  }
+
+  /* Moldura de gradiente com miolo da cor da superficie. */
+  .ring-gradient {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--accent-warm)),
+        rgb(var(--accent-mid)) 45%,
+        rgb(var(--accent-cool))
+      )
+      border-box;
+    border: 1.5px solid transparent;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Acessibilidade. Movimento reduzido nao e "sem feedback": e feedback mais
+   suave. Transparencia/contraste seguem as preferencias do sistema.
+--------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    transition: none;
+  }
   .btn {
     @apply active:scale-100;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: rgb(var(--surface-card));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    @apply border-line;
+  }
+  .scrim {
+    @apply backdrop-blur-none;
+  }
+  .ambient {
+    display: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .glass {
+    background: rgb(var(--surface-card));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    @apply border-ink/40;
+  }
+  .field {
+    @apply border-ink/40;
   }
 }

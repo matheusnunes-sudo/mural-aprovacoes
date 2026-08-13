@@ -1,66 +1,105 @@
 import type { Config } from "tailwindcss";
 
-// Design tokens sao a fonte da verdade do padrao visual.
-// Ajuste as cores da marca aqui e o app inteiro acompanha.
+// Os valores das cores vivem como CSS variables em app/globals.css, em canais
+// RGB, para o mesmo token servir tema claro e escuro e ainda aceitar opacidade
+// (ex.: bg-surface-card/60). Trocar de tema = trocar as variaveis, nao as
+// classes dos componentes.
 const config: Config = {
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-  ],
+  darkMode: "class",
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Superficies em escala de elevacao (referencia: ClickUp / Apple)
         surface: {
-          canvas: "#F7F7F8",   // fundo da pagina
-          card: "#FFFFFF",     // cartoes
-          sunken: "#F0F0F2",   // areas rebaixadas (uploads, campos)
+          canvas: "rgb(var(--surface-canvas) / <alpha-value>)",
+          card: "rgb(var(--surface-card) / <alpha-value>)",
+          sunken: "rgb(var(--surface-sunken) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "#1A1A1E",  // texto primario
-          soft: "#5B5B66",     // texto secundario
-          muted: "#8E8E99",    // dicas, placeholders
+          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
+          soft: "rgb(var(--ink-soft) / <alpha-value>)",
+          muted: "rgb(var(--ink-muted) / <alpha-value>)",
+          inverse: "rgb(var(--ink-inverse) / <alpha-value>)",
         },
         line: {
-          DEFAULT: "#E6E6EA",  // hairline padrao
-          strong: "#D4D4DA",   // divisor em enfase
+          DEFAULT: "rgb(var(--line) / <alpha-value>)",
+          strong: "rgb(var(--line-strong) / <alpha-value>)",
         },
-        // Cor da marca Assaad. TROCAR pelo hex oficial da plataforma.
         brand: {
-          50: "#EAF2FF",
-          100: "#CFE0FF",
-          500: "#2563EB",
-          600: "#1D4FD8",
-          700: "#1740B0",
+          50: "rgb(var(--brand-50) / <alpha-value>)",
+          100: "rgb(var(--brand-100) / <alpha-value>)",
+          500: "rgb(var(--brand-500) / <alpha-value>)",
+          600: "rgb(var(--brand-600) / <alpha-value>)",
+          700: "rgb(var(--brand-700) / <alpha-value>)",
         },
-        // Estados semanticos
-        warning: { bg: "#FFF4E5", fg: "#B25E00" },
-        success: { bg: "#E7F6EC", fg: "#1B7F42" },
-        info: { bg: "#EAF2FF", fg: "#1D4FD8" },
+        // Paradas do gradiente-assinatura (laranja -> coral -> indigo).
+        accent: {
+          warm: "rgb(var(--accent-warm) / <alpha-value>)",
+          mid: "rgb(var(--accent-mid) / <alpha-value>)",
+          cool: "rgb(var(--accent-cool) / <alpha-value>)",
+        },
+        warning: {
+          bg: "rgb(var(--warning-bg) / <alpha-value>)",
+          fg: "rgb(var(--warning-fg) / <alpha-value>)",
+        },
+        success: {
+          bg: "rgb(var(--success-bg) / <alpha-value>)",
+          fg: "rgb(var(--success-fg) / <alpha-value>)",
+        },
+        info: {
+          bg: "rgb(var(--info-bg) / <alpha-value>)",
+          fg: "rgb(var(--info-fg) / <alpha-value>)",
+        },
       },
       fontFamily: {
-        // Referencia Apple/ClickUp: sans geometrica e legivel.
-        // Inter cobre bem; troque por fonte da marca se houver.
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
       },
       borderRadius: {
-        // Cantos generosos como ClickUp/Apple, sem exagero
-        card: "14px",
-        control: "10px",
+        // Cantos generosos como nas referencias.
+        card: "1.5rem", // 24px
+        control: "0.875rem", // 14px
+        pill: "999px",
       },
       boxShadow: {
-        // Sombras suaves e funcionais, nunca pesadas
-        card: "0 1px 2px rgba(16,16,20,0.04), 0 1px 3px rgba(16,16,20,0.06)",
-        pop: "0 8px 24px rgba(16,16,20,0.10)",
+        // Sombras vem de variavel: no escuro elas mudam de receita.
+        card: "var(--shadow-card)",
+        pop: "var(--shadow-pop)",
+        press: "var(--shadow-press)",
       },
       fontSize: {
-        // Escala tipografica intencional: tracking aperta em texto grande
-        // e abre levemente em texto pequeno (HIG, "The Details of UI Typography").
-        display: ["28px", { lineHeight: "1.2", fontWeight: "600", letterSpacing: "-0.02em" }],
-        title: ["20px", { lineHeight: "1.3", fontWeight: "600", letterSpacing: "-0.01em" }],
-        body: ["15px", { lineHeight: "1.6", fontWeight: "400", letterSpacing: "0" }],
-        label: ["13px", { lineHeight: "1.4", fontWeight: "500", letterSpacing: "0.01em" }],
-        caption: ["12px", { lineHeight: "1.4", fontWeight: "400", letterSpacing: "0.01em" }],
+        // Escala em rem (respeita o tamanho de fonte do usuario) com tracking
+        // por tamanho: aperta no texto grande, abre no pequeno.
+        hero: [
+          "clamp(2rem, 7vw, 2.75rem)",
+          { lineHeight: "1.05", fontWeight: "700", letterSpacing: "-0.03em" },
+        ],
+        display: [
+          "clamp(1.625rem, 5vw, 1.875rem)",
+          { lineHeight: "1.15", fontWeight: "700", letterSpacing: "-0.025em" },
+        ],
+        title: [
+          "1.25rem",
+          { lineHeight: "1.3", fontWeight: "600", letterSpacing: "-0.015em" },
+        ],
+        body: [
+          "0.9375rem",
+          { lineHeight: "1.6", fontWeight: "400", letterSpacing: "0" },
+        ],
+        label: [
+          "0.8125rem",
+          { lineHeight: "1.4", fontWeight: "500", letterSpacing: "0.01em" },
+        ],
+        caption: [
+          "0.75rem",
+          { lineHeight: "1.4", fontWeight: "400", letterSpacing: "0.01em" },
+        ],
+      },
+      backgroundImage: {
+        // Gradiente-assinatura, na diagonal das referencias.
+        brand:
+          "linear-gradient(135deg, rgb(var(--accent-warm)) 0%, rgb(var(--accent-mid)) 45%, rgb(var(--accent-cool)) 100%)",
+        "brand-soft":
+          "linear-gradient(135deg, rgb(var(--accent-warm) / 0.18) 0%, rgb(var(--accent-mid) / 0.18) 45%, rgb(var(--accent-cool) / 0.18) 100%)",
       },
     },
   },

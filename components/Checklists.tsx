@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 type Item = { id: string; texto: string; feito: boolean; responsavel: string };
 
@@ -19,9 +19,17 @@ const designsIniciais: Item[] = [
 
 export function Checklists({ responsaveis }: { responsaveis: string[] }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Coluna titulo="Postagens do dia" inicial={postagensIniciais} responsaveis={responsaveis} />
-      <Coluna titulo="Designs do dia" inicial={designsIniciais} responsaveis={responsaveis} />
+    <div className="grid gap-4 lg:grid-cols-2">
+      <Coluna
+        titulo="Postagens do dia"
+        inicial={postagensIniciais}
+        responsaveis={responsaveis}
+      />
+      <Coluna
+        titulo="Designs do dia"
+        inicial={designsIniciais}
+        responsaveis={responsaveis}
+      />
     </div>
   );
 }
@@ -38,6 +46,8 @@ function Coluna({
   const [itens, setItens] = useState(inicial);
   const [novo, setNovo] = useState("");
   const feitos = itens.filter((i) => i.feito).length;
+  const progresso = itens.length ? (feitos / itens.length) * 100 : 0;
+  const reduzMovimento = useReducedMotion();
 
   function toggle(id: string) {
     setItens((is) => is.map((i) => (i.id === id ? { ...i, feito: !i.feito } : i)));
@@ -49,21 +59,38 @@ function Coluna({
     if (!novo.trim()) return;
     setItens((is) => [
       ...is,
-      { id: crypto.randomUUID(), texto: novo.trim(), feito: false, responsavel: responsaveis[0] },
+      {
+        id: crypto.randomUUID(),
+        texto: novo.trim(),
+        feito: false,
+        responsavel: responsaveis[0],
+      },
     ]);
     setNovo("");
   }
 
   return (
-    <div className="card p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-label">{titulo}</h3>
-        <span className="text-caption text-ink-soft">
+    // min-w-0: sem isso o item de grid nao encolhe abaixo do proprio
+    // min-content e a coluna estoura a largura da tela no celular.
+    <div className="glass min-w-0 p-5 sm:p-6">
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <h3 className="text-label font-semibold">{titulo}</h3>
+        <span className="text-caption text-ink-soft tabular-nums">
           {feitos}/{itens.length}
         </span>
       </div>
 
-      <ul className="space-y-1">
+      {/* Barra de progresso: status visivel sem precisar contar os itens. */}
+      <div className="mb-4 h-1.5 overflow-hidden rounded-pill bg-surface-sunken">
+        <motion.div
+          className="bg-brand h-full rounded-pill"
+          initial={false}
+          animate={{ width: `${progresso}%` }}
+          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+        />
+      </div>
+
+      <ul>
         <AnimatePresence initial={false}>
           {itens.map((i) => (
             <motion.li
@@ -73,25 +100,51 @@ function Coluna({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="flex items-center gap-2 border-b border-line py-2 last:border-0"
+              className="flex items-center gap-3 border-b border-line py-2.5 last:border-0"
             >
-              <input
-                type="checkbox"
-                checked={i.feito}
-                onChange={() => toggle(i.id)}
-                className="h-4 w-4 accent-brand-600"
-              />
+              <motion.button
+                onClick={() => toggle(i.id)}
+                whileTap={reduzMovimento ? undefined : { scale: 0.85 }}
+                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                role="checkbox"
+                aria-checked={i.feito}
+                aria-label={i.texto}
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                  i.feito
+                    ? "bg-brand border-transparent text-white"
+                    : "border-line-strong bg-surface-card hover:border-accent-mid"
+                }`}
+              >
+                {i.feito && (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden
+                  >
+                    <path d="M2.5 6.5 5 9l4.5-5.5" />
+                  </svg>
+                )}
+              </motion.button>
+
               <span
-                className={`flex-1 text-body transition-colors duration-200 ${
+                className={`text-body min-w-0 flex-1 truncate transition-colors duration-200 ${
                   i.feito ? "text-ink-muted line-through" : ""
                 }`}
               >
                 {i.texto}
               </span>
+
               <select
-                className="rounded-control border border-line bg-surface-card px-2 py-1 text-caption"
+                className="text-caption text-ink-soft shrink-0 rounded-pill border border-line bg-surface-card px-2.5 py-1 outline-none focus:border-brand-500"
                 value={i.responsavel}
                 onChange={(e) => setResp(i.id, e.target.value)}
+                aria-label={`Responsavel por ${i.texto}`}
               >
                 {responsaveis.map((r) => (
                   <option key={r}>{r}</option>
@@ -102,15 +155,19 @@ function Coluna({
         </AnimatePresence>
       </ul>
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <input
-          className="field"
+          className="field min-w-0"
           value={novo}
           onChange={(e) => setNovo(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && adicionar()}
           placeholder="Adicionar tarefa"
         />
-        <button className="btn-ghost" onClick={adicionar}>
+        <button
+          className="btn-ghost shrink-0 px-4"
+          onClick={adicionar}
+          aria-label="Adicionar tarefa"
+        >
           Add
         </button>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   supabase,
   supabaseConfigurado,
@@ -9,6 +10,7 @@ import {
   normalizarEmail,
 } from "@/lib/supabase";
 import { CampoUpload } from "@/components/CampoUpload";
+import { TemaToggle } from "@/components/TemaToggle";
 
 export default function FormularioAluno() {
   const router = useRouter();
@@ -22,6 +24,7 @@ export default function FormularioAluno() {
     faculdade: "",
     depoimento: "",
   });
+  const reduzMovimento = useReducedMotion();
 
   function set(campo: string, valor: string) {
     setForm((f) => ({ ...f, [campo]: valor }));
@@ -38,7 +41,13 @@ export default function FormularioAluno() {
 
   async function enviar() {
     setErro(null);
-    if (!form.nome || !form.email || !form.curso || !form.faculdade || !form.depoimento) {
+    if (
+      !form.nome ||
+      !form.email ||
+      !form.curso ||
+      !form.faculdade ||
+      !form.depoimento
+    ) {
       setErro("Preencha nome, email, curso, faculdade e depoimento.");
       return;
     }
@@ -74,17 +83,35 @@ export default function FormularioAluno() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-5 py-12">
-      <header className="mb-8">
-        <p className="text-label text-brand-600">Assaad Educacao</p>
-        <h1 className="text-display mt-1">Conte sua aprovacao</h1>
-        <p className="text-body text-ink-soft mt-2">
+    <main className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6 sm:py-14">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-label text-gradient font-semibold">
+          Assaad Educacao
+        </p>
+        <TemaToggle />
+      </div>
+
+      <motion.header
+        className="mb-8"
+        initial={reduzMovimento ? { opacity: 0 } : { opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+      >
+        <h1 className="text-hero">
+          Conte sua <span className="text-gradient">aprovacao</span>
+        </h1>
+        <p className="text-body text-ink-soft mt-3 max-w-md">
           Sua historia inspira quem ainda esta estudando. Preencha abaixo e
           nossa equipe cuida do resto.
         </p>
-      </header>
+      </motion.header>
 
-      <div className="card p-6 space-y-4">
+      <motion.div
+        className="glass space-y-5 p-5 sm:p-7"
+        initial={reduzMovimento ? { opacity: 0 } : { opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", bounce: 0, duration: 0.5, delay: 0.08 }}
+      >
         <Campo label="Nome completo" obrigatorio>
           <input
             className="field"
@@ -119,7 +146,7 @@ export default function FormularioAluno() {
           )}
         </Campo>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Campo label="Curso" obrigatorio>
             <input
               className="field"
@@ -140,35 +167,36 @@ export default function FormularioAluno() {
 
         <Campo label="Seu depoimento" obrigatorio>
           <textarea
-            className="field min-h-[120px] resize-y"
+            className="field min-h-[7.5rem] resize-y"
             value={form.depoimento}
             onChange={(e) => set("depoimento", e.target.value)}
             placeholder="Conte como foi sua jornada ate a aprovacao."
           />
         </Campo>
 
-        <CampoUpload
-          label="Sua foto"
-          accept="image/*"
-          dica="JPG ou PNG, ate 5 MB"
-        />
-
-        <CampoUpload
-          label="Comprovante de aprovacao"
-          accept="image/*,application/pdf"
-          dica="Print, foto ou PDF, ate 5 MB"
-        />
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <CampoUpload
+            label="Sua foto"
+            accept="image/*"
+            dica="JPG ou PNG, ate 5 MB"
+          />
+          <CampoUpload
+            label="Comprovante de aprovacao"
+            accept="image/*,application/pdf"
+            dica="Print, foto ou PDF, ate 5 MB"
+          />
+        </div>
 
         {erro && <p className="text-caption text-warning-fg">{erro}</p>}
 
         <button
-          className="btn-primary w-full justify-center"
+          className="btn-primary w-full py-3"
           onClick={enviar}
           disabled={enviando}
         >
           {enviando ? "Enviando..." : "Enviar minha aprovacao"}
         </button>
-      </div>
+      </motion.div>
     </main>
   );
 }
@@ -184,9 +212,9 @@ function Campo({
 }) {
   return (
     <label className="block">
-      <span className="text-label text-ink-soft mb-1.5 block">
+      <span className="text-label text-ink-soft mb-2 block">
         {label}
-        {obrigatorio && <span className="text-brand-600"> *</span>}
+        {obrigatorio && <span className="text-accent-mid"> *</span>}
       </span>
       {children}
     </label>

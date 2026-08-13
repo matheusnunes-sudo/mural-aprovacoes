@@ -31,39 +31,67 @@ export function DetalheAluno({
   const materializar = reduzMovimento
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
     : {
-        initial: { opacity: 0, scale: 0.96, y: 8 },
+        initial: { opacity: 0, scale: 0.96, y: 12 },
         animate: { opacity: 1, scale: 1, y: 0 },
-        exit: { opacity: 0, scale: 0.96, y: 8 },
+        exit: { opacity: 0, scale: 0.96, y: 12 },
       };
+
+  // Esc fecha: nunca prender o usuario dentro do modal.
+  useEffect(() => {
+    function onTecla(e: KeyboardEvent) {
+      if (e.key === "Escape") onFechar();
+    }
+    window.addEventListener("keydown", onTecla);
+    return () => window.removeEventListener("keydown", onTecla);
+  }, [onFechar]);
 
   return (
     <motion.div
-      className="scrim fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 py-10"
+      className="scrim fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 py-6 sm:p-4 sm:py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       onClick={(e) => e.target === e.currentTarget && onFechar()}
+      role="dialog"
+      aria-modal
+      aria-label={`Depoimentos de ${grupo.nome}`}
     >
       <motion.div
-        className="card w-full max-w-2xl p-6 shadow-pop"
+        className="card w-full max-w-2xl p-5 shadow-pop sm:p-7"
         {...materializar}
-        transition={{ type: "spring", bounce: reduzMovimento ? 0 : 0.15, duration: 0.35 }}
+        transition={{
+          type: "spring",
+          bounce: reduzMovimento ? 0 : 0.15,
+          duration: 0.35,
+        }}
       >
-        <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="mb-5 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-title">{grupo.nome}</h2>
-            <p className="text-caption text-ink-soft truncate">
-              {aprovacao.curso} · {aprovacao.faculdade} · {grupo.email}
+            <p className="text-caption text-ink-soft mt-0.5 truncate">
+              {aprovacao.curso} · {aprovacao.faculdade}
             </p>
+            <p className="text-caption text-ink-muted truncate">{grupo.email}</p>
           </div>
           <motion.button
             onClick={onFechar}
             whileTap={reduzMovimento ? undefined : { scale: 0.9 }}
-            className="shrink-0 text-ink-muted hover:text-ink text-xl leading-none"
+            className="text-ink-soft flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-surface-sunken transition-colors hover:text-ink"
             aria-label="Fechar"
           >
-            ×
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
           </motion.button>
         </div>
 
@@ -73,19 +101,19 @@ export function DetalheAluno({
               Este aluno enviou {grupo.aprovacoes.length} depoimentos com o
               mesmo email.
             </p>
-            <div className="flex flex-wrap gap-1 rounded-control bg-surface-sunken p-1">
+            <div className="flex gap-1 overflow-x-auto rounded-pill bg-surface-sunken p-1">
               {grupo.aprovacoes.map((a, i) => (
                 <button
                   key={a.id}
                   onClick={() => setIndice(i)}
-                  className={`relative rounded-[7px] px-3 py-1.5 text-label transition-colors ${
+                  className={`relative shrink-0 whitespace-nowrap rounded-pill px-3.5 py-1.5 text-label transition-colors ${
                     i === indice ? "text-ink" : "text-ink-soft hover:text-ink"
                   }`}
                 >
                   {i === indice && (
                     <motion.span
                       layoutId="envio-selecionado"
-                      className="absolute inset-0 rounded-[7px] bg-surface-card shadow-card"
+                      className="absolute inset-0 rounded-pill bg-surface-card shadow-card"
                       transition={{ type: "spring", bounce: 0, duration: 0.3 }}
                     />
                   )}
@@ -162,38 +190,44 @@ function RevisaoDepoimento({
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <label className="text-label text-ink-soft">Status</label>
-        <select
-          className="field w-auto"
-          value={aprovacao.status}
-          onChange={(e) =>
-            onAtualizar(aprovacao.id, {
-              status: e.target.value as StatusAprovacao,
-            })
-          }
-        >
-          <option value="pendente">Pendente</option>
-          <option value="design_pronto">Design pronto</option>
-          <option value="postado">Postado</option>
-        </select>
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-label text-ink-soft mb-1.5 block">Status</span>
+          <select
+            className="field"
+            value={aprovacao.status}
+            onChange={(e) =>
+              onAtualizar(aprovacao.id, {
+                status: e.target.value as StatusAprovacao,
+              })
+            }
+          >
+            <option value="pendente">Pendente</option>
+            <option value="design_pronto">Design pronto</option>
+            <option value="postado">Postado</option>
+          </select>
+        </label>
 
-        <label className="text-label text-ink-soft">Responsavel</label>
-        <select
-          className="field w-auto"
-          value={aprovacao.responsavel || ""}
-          onChange={(e) =>
-            onAtualizar(aprovacao.id, { responsavel: e.target.value })
-          }
-        >
-          <option value="">Sem responsavel</option>
-          {responsaveis.map((r) => (
-            <option key={r}>{r}</option>
-          ))}
-        </select>
+        <label className="block">
+          <span className="text-label text-ink-soft mb-1.5 block">
+            Responsavel
+          </span>
+          <select
+            className="field"
+            value={aprovacao.responsavel || ""}
+            onChange={(e) =>
+              onAtualizar(aprovacao.id, { responsavel: e.target.value })
+            }
+          >
+            <option value="">Sem responsavel</option>
+            {responsaveis.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      <div className="mb-2 flex items-center gap-2">
+      <div className="mb-2.5 flex flex-wrap items-center gap-2">
         <span className="text-label">Depoimento</span>
         {modo === "ia" && (
           <span className="badge bg-info-bg text-info-fg">
@@ -210,7 +244,7 @@ function RevisaoDepoimento({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <p className="text-caption text-ink-muted mb-1.5">Original</p>
-          <div className="rounded-control bg-surface-sunken p-3 text-body text-ink-soft">
+          <div className="text-body text-ink-soft rounded-control bg-surface-sunken p-3.5">
             {aprovacao.depoimento_original}
           </div>
         </div>
@@ -219,7 +253,7 @@ function RevisaoDepoimento({
             Corrigido (editavel)
           </p>
           <textarea
-            className="field min-h-[140px] resize-y"
+            className="field min-h-[8.75rem] resize-y"
             value={carregando ? "Corrigindo..." : corrigido}
             disabled={carregando}
             onChange={(e) => setCorrigido(e.target.value)}
@@ -227,7 +261,7 @@ function RevisaoDepoimento({
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
         <button
           className="btn-ghost"
           onClick={() => corrigir("emocionante")}
@@ -235,7 +269,7 @@ function RevisaoDepoimento({
         >
           Regerar com tom emocionante
         </button>
-        <button className="btn-primary ml-auto" onClick={salvar}>
+        <button className="btn-primary sm:ml-auto" onClick={salvar}>
           Salvar depoimento
         </button>
       </div>

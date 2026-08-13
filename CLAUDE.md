@@ -40,9 +40,20 @@ insert — o historico de envios importa.
 O padrao visual e prioridade alta. Antes de criar ou alterar UI, leia
 `docs/design-system.md`. Nunca use cores ou espacamentos soltos: use SEMPRE
 os tokens do Tailwind (`bg-surface-card`, `text-ink-soft`, `rounded-card`,
-etc). As referencias sao ClickUp, Apple (HIG) e a Plataforma Assaad:
-superficies limpas, hairlines sutis, cantos generosos, tipografia legivel,
-sombras suaves e funcionais. Sem gradientes decorativos.
+etc).
+
+O app tem **tema claro e escuro**. Por isso: nunca escreva cor literal
+(`#fff`, `bg-white`, `text-black`) num componente — ela quebra em um dos dois
+temas. Cor nova exige a variavel nos dois temas em `app/globals.css`.
+
+Referencias: Apple (HIG + fluid interfaces, ver `APPLE_DESIGN_SKILL.md`),
+soft UI / glassmorphism das refs do cliente, ClickUp e a Plataforma Assaad.
+Superficies de vidro, cantos generosos, tipografia bold com tracking
+apertado, gradiente laranja->coral->indigo como assinatura (um destaque por
+tela, nao papel de parede).
+
+Layout e mobile-first e testado em 375 / 768 / 1280. Cuidado com o bug
+classico: item de grid/flex com texto truncavel precisa de `min-w-0`.
 
 ## Regra de negocio critica
 

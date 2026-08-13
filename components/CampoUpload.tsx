@@ -59,7 +59,7 @@ export function CampoUpload({
 
   return (
     <div>
-      <span className="text-label text-ink-soft mb-1.5 block">{label}</span>
+      <span className="text-label text-ink-soft mb-2 block">{label}</span>
 
       <input
         ref={inputRef}
@@ -87,15 +87,15 @@ export function CampoUpload({
             }}
             whileTap={reduzMovimento ? undefined : { scale: 0.99 }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className={`flex w-full flex-col items-center justify-center gap-1 rounded-control border border-dashed px-4 py-6 text-center transition-colors ${
+            className={`flex w-full flex-col items-center justify-center gap-1.5 rounded-control border border-dashed px-4 py-7 text-center transition-colors ${
               arrastando
-                ? "border-brand-500 bg-brand-50"
-                : "border-line-strong bg-surface-sunken hover:border-brand-500"
+                ? "border-accent-mid bg-brand-soft"
+                : "border-line-strong bg-surface-sunken/60 hover:border-accent-mid"
             }`}
           >
             <IconeUpload />
             <span className="text-label text-ink">
-              Escolher arquivo ou arrastar aqui
+              Escolher arquivo ou arrastar
             </span>
             <span className="text-caption text-ink-muted">{dica}</span>
           </motion.button>
@@ -113,10 +113,10 @@ export function CampoUpload({
               <img
                 src={preview}
                 alt=""
-                className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                className="h-12 w-12 shrink-0 rounded-xl object-cover"
               />
             ) : (
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-sunken text-ink-soft">
+              <span className="bg-brand flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white">
                 <IconeArquivo />
               </span>
             )}
@@ -130,7 +130,7 @@ export function CampoUpload({
               type="button"
               onClick={limpar}
               whileTap={reduzMovimento ? undefined : { scale: 0.9 }}
-              className="rounded-control px-2.5 py-1.5 text-label text-ink-soft transition-colors hover:bg-surface-sunken hover:text-ink"
+              className="rounded-pill px-3 py-1.5 text-label text-ink-soft transition-colors hover:bg-surface-sunken hover:text-ink"
             >
               Remover
             </motion.button>
