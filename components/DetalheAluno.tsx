@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { ETAPAS } from "@/lib/supabase";
 import type { Aprovacao, GrupoAluno, StatusAprovacao } from "@/lib/supabase";
+import { Interruptor } from "./Interruptor";
 
 function dataCurta(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -22,7 +24,7 @@ export function DetalheAluno({
   onFechar: () => void;
   onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
 }) {
-  // Qual dos envios do aluno esta em revisao. 0 = mais recente.
+  // Qual dos envios do aluno está em revisão. 0 = mais recente.
   const [indice, setIndice] = useState(0);
   const aprovacao = grupo.aprovacoes[indice] ?? grupo.aprovacoes[0];
   const varios = grupo.aprovacoes.length > 1;
@@ -36,7 +38,7 @@ export function DetalheAluno({
         exit: { opacity: 0, scale: 0.96, y: 12 },
       };
 
-  // Esc fecha: nunca prender o usuario dentro do modal.
+  // Esc fecha: nunca prender o usuário dentro do modal.
   useEffect(() => {
     function onTecla(e: KeyboardEvent) {
       if (e.key === "Escape") onFechar();
@@ -99,7 +101,7 @@ export function DetalheAluno({
           <div className="mb-5">
             <p className="text-caption text-ink-muted mb-2">
               Este aluno enviou {grupo.aprovacoes.length} depoimentos com o
-              mesmo email.
+              mesmo e-mail.
             </p>
             <div className="flex gap-1 overflow-x-auto rounded-pill bg-surface-sunken p-1">
               {grupo.aprovacoes.map((a, i) => (
@@ -126,7 +128,7 @@ export function DetalheAluno({
           </div>
         )}
 
-        {/* key remonta a revisao ao trocar de envio, zerando o estado local. */}
+        {/* key remonta a revisão ao trocar de envio, zerando o estado local. */}
         <RevisaoDepoimento
           key={aprovacao.id}
           aprovacao={aprovacao}
@@ -177,7 +179,7 @@ function RevisaoDepoimento({
     }
   }
 
-  // Correcao automatica ao abrir, se ainda nao houver versao corrigida.
+  // Correção automática ao abrir, se ainda não houver versão corrigida.
   useEffect(() => {
     if (!aprovacao.depoimento_corrigido) corrigir();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -190,6 +192,41 @@ function RevisaoDepoimento({
 
   return (
     <>
+      {/* Autorização vem primeiro: sem ela, o resto do trabalho não acontece. */}
+      <div
+        className={`mb-5 flex items-center justify-between gap-4 rounded-control border p-3.5 ${
+          aprovacao.autoriza_postagem
+            ? "border-line bg-surface-sunken/60"
+            : "border-transparent bg-danger-bg"
+        }`}
+      >
+        <div className="min-w-0">
+          <p
+            className={`text-label ${
+              aprovacao.autoriza_postagem ? "" : "text-danger-fg"
+            }`}
+          >
+            {aprovacao.autoriza_postagem
+              ? "Autoriza a publicação"
+              : "Não autoriza a publicação"}
+          </p>
+          <p
+            className={`text-caption mt-0.5 ${
+              aprovacao.autoriza_postagem ? "text-ink-soft" : "text-danger-fg/80"
+            }`}
+          >
+            {aprovacao.autoriza_postagem
+              ? "Pode virar card e ir para as redes."
+              : "Não produza design para este depoimento."}
+          </p>
+        </div>
+        <Interruptor
+          ligado={aprovacao.autoriza_postagem}
+          onMudar={(v) => onAtualizar(aprovacao.id, { autoriza_postagem: v })}
+          rotulo="Autorização de publicação"
+        />
+      </div>
+
       <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="text-label text-ink-soft mb-1.5 block">Status</span>
@@ -202,15 +239,17 @@ function RevisaoDepoimento({
               })
             }
           >
-            <option value="pendente">Pendente</option>
-            <option value="design_pronto">Design pronto</option>
-            <option value="postado">Postado</option>
+            {ETAPAS.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.titulo}
+              </option>
+            ))}
           </select>
         </label>
 
         <label className="block">
           <span className="text-label text-ink-soft mb-1.5 block">
-            Responsavel
+            Responsável
           </span>
           <select
             className="field"
@@ -219,7 +258,7 @@ function RevisaoDepoimento({
               onAtualizar(aprovacao.id, { responsavel: e.target.value })
             }
           >
-            <option value="">Sem responsavel</option>
+            <option value="">Sem responsável</option>
             {responsaveis.map((r) => (
               <option key={r}>{r}</option>
             ))}
@@ -250,7 +289,7 @@ function RevisaoDepoimento({
         </div>
         <div>
           <p className="text-caption text-ink-muted mb-1.5">
-            Corrigido (editavel)
+            Corrigido (editável)
           </p>
           <textarea
             className="field min-h-[8.75rem] resize-y"

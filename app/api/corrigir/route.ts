@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-// Corrige o portugues do depoimento SEM alterar o sentido.
-// A chave ANTHROPIC_API_KEY vem das variaveis de ambiente.
+// Corrige o português do depoimento SEM alterar o sentido.
+// A chave ANTHROPIC_API_KEY vem das variáveis de ambiente.
 
 export async function POST(req: NextRequest) {
   const { depoimento, tom } = await req.json();
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    // Modo demo: devolve uma versao levemente ajustada para o app rodar
+    // Modo demo: devolve uma versão levemente ajustada para o app rodar
     // sem a chave configurada.
     return NextResponse.json({
       corrigido: depoimento.charAt(0).toUpperCase() + depoimento.slice(1),
@@ -30,14 +30,14 @@ export async function POST(req: NextRequest) {
       ? "Deixe o tom um pouco mais emocionante e caloroso, mas sem inventar fatos."
       : "Mantenha o tom natural e sincero do aluno.";
 
-  const prompt = `Voce corrige depoimentos de alunos aprovados em vestibulares.
+  const prompt = `Você corrige depoimentos de alunos aprovados em vestibulares.
 
 Regras invioláveis:
-- Corrija apenas ortografia, pontuacao, acentuacao e concordancia.
-- NAO altere o sentido, os fatos, os nomes de curso/faculdade ou a mensagem do aluno.
-- NAO invente informacoes que o aluno nao escreveu.
+- Corrija apenas ortografia, pontuação, acentuação e concordância.
+- NÃO altere o sentido, os fatos, os nomes de curso/faculdade ou a mensagem do aluno.
+- NÃO invente informações que o aluno não escreveu.
 - Preserve a voz pessoal do aluno. ${instrucaoTom}
-- Responda SOMENTE com o depoimento corrigido, sem aspas e sem comentarios.
+- Responda SOMENTE com o depoimento corrigido, sem aspas e sem comentários.
 
 Depoimento original:
 ${depoimento}`;
@@ -58,7 +58,7 @@ ${depoimento}`;
     return NextResponse.json({ corrigido: texto, modo: "ia" });
   } catch (e) {
     return NextResponse.json(
-      { erro: "Nao foi possivel corrigir agora. Tente novamente." },
+      { erro: "Não foi possível corrigir agora. Tente novamente." },
       { status: 500 }
     );
   }

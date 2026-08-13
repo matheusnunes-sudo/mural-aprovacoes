@@ -22,8 +22,8 @@ de posts do mural (a maior prova social da empresa).
 - `app/page.tsx` - formulario publico do aluno
 - `app/painel/page.tsx` - painel admin (fila, detalhe, checklists)
 - `app/api/corrigir/route.ts` - correcao de depoimento via IA
-- `components/` - componentes do painel
-- `lib/supabase.ts` - cliente, tipos e validacao de email
+- `components/` - componentes do painel (fila, Kanban, planilha, detalhe)
+- `lib/supabase.ts` - cliente, tipos, `ETAPAS` e validacao de email
 - `lib/agrupar.ts` - agrupa os envios do mesmo email em um aluno so
 - `lib/mock.ts` - dados de exemplo (usados quando o Supabase nao esta configurado)
 
@@ -34,6 +34,18 @@ O `email` identifica o aluno e nao e unico: se a pessoa mandar um segundo
 depoimento com o mesmo email, vira uma nova linha e o painel mostra os dois
 juntos no mesmo card (`agruparPorEmail`). Nunca deduplique por email no
 insert — o historico de envios importa.
+
+`autoriza_postagem` e a regra de negocio mais importante do painel: aluno que
+nao autoriza NAO deve entrar na producao de design. Por isso ele aparece
+marcado em vermelho na fila, no Kanban e na planilha, tem filtro proprio e
+uma metrica no topo. Ao criar qualquer visualizacao nova, mostre esse estado.
+
+As etapas do processo vivem em `ETAPAS` (`lib/supabase.ts`) — a ordem ali e a
+ordem das colunas do Kanban e das opcoes de status. Adicionar uma etapa e
+editar esse array, nao caçar strings pelo codigo.
+
+A fila agrupa por aluno; Kanban e planilha trabalham envio a envio, porque
+status e autorizacao pertencem ao depoimento, nao a pessoa.
 
 ## Regras de design (IMPORTANTE)
 
@@ -47,10 +59,12 @@ O app tem **tema claro e escuro**. Por isso: nunca escreva cor literal
 temas. Cor nova exige a variavel nos dois temas em `app/globals.css`.
 
 Referencias: Apple (HIG + fluid interfaces, ver `APPLE_DESIGN_SKILL.md`),
-soft UI / glassmorphism das refs do cliente, ClickUp e a Plataforma Assaad.
-Superficies de vidro, cantos generosos, tipografia bold com tracking
-apertado, gradiente laranja->coral->indigo como assinatura (um destaque por
-tela, nao papel de parede).
+ClickUp e a Plataforma Assaad. Fundo liso, **sem gradiente decorativo**, um
+unico azul de acento reservado ao que e interativo ou esta em foco, cantos
+generosos e tipografia bold com tracking apertado.
+
+Todo texto de interface e em portugues **com acentuacao correta**. So
+identificadores de codigo ficam em ASCII.
 
 Layout e mobile-first e testado em 375 / 768 / 1280. Cuidado com o bug
 classico: item de grid/flex com texto truncavel precisa de `min-w-0`.

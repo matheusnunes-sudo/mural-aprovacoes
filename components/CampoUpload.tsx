@@ -45,6 +45,7 @@ export function CampoUpload({
       setErro("Arquivo maior que 5 MB. Escolha um menor.");
       return;
     }
+
     setErro(null);
     setArquivo(f);
     onArquivo?.(f);
@@ -89,8 +90,8 @@ export function CampoUpload({
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
             className={`flex w-full flex-col items-center justify-center gap-1.5 rounded-control border border-dashed px-4 py-7 text-center transition-colors ${
               arrastando
-                ? "border-accent-mid bg-brand-soft"
-                : "border-line-strong bg-surface-sunken/60 hover:border-accent-mid"
+                ? "border-brand-500 bg-brand-500/5"
+                : "border-line-strong bg-surface-sunken/60 hover:border-brand-500"
             }`}
           >
             <IconeUpload />
@@ -116,7 +117,7 @@ export function CampoUpload({
                 className="h-12 w-12 shrink-0 rounded-xl object-cover"
               />
             ) : (
-              <span className="bg-brand flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white">
+              <span className="bg-brand-500 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white">
                 <IconeArquivo />
               </span>
             )}

@@ -6,88 +6,73 @@
    Tokens. Canais RGB para o Tailwind poder aplicar opacidade sobre eles.
    Tema claro em :root, tema escuro em .dark (a classe e definida antes da
    pintura pelo script em app/layout.tsx).
+
+   Paleta no espirito da Apple: fundo liso, hierarquia por elevacao e
+   hairline, e UM azul de acento. Sem gradiente.
 --------------------------------------------------------------------------- */
 @layer base {
   :root {
-    --surface-canvas: 232 232 237;
+    --surface-canvas: 242 242 247;
     --surface-card: 255 255 255;
-    --surface-sunken: 241 241 245;
+    --surface-sunken: 233 233 238;
 
-    --ink: 16 16 20;
-    --ink-soft: 91 91 102;
-    --ink-muted: 145 145 158;
-    --ink-inverse: 255 255 255;
+    --ink: 28 28 30;
+    --ink-soft: 99 99 102;
+    --ink-muted: 142 142 147;
 
-    --line: 226 226 232;
-    --line-strong: 208 208 216;
+    --line: 209 209 214;
+    --line-strong: 174 174 178;
 
-    --brand-50: 234 240 255;
-    --brand-100: 207 219 255;
-    --brand-500: 79 109 245;
-    --brand-600: 61 87 224;
-    --brand-700: 45 66 186;
+    --brand-50: 234 242 255;
+    --brand-100: 209 227 255;
+    --brand-500: 0 122 255;
+    --brand-600: 0 105 224;
+    --brand-700: 0 85 184;
 
-    --accent-warm: 253 184 116;
-    --accent-mid: 249 124 135;
-    --accent-cool: 92 107 245;
+    --warning-bg: 255 243 224;
+    --warning-fg: 176 98 0;
+    --success-bg: 226 246 232;
+    --success-fg: 26 122 60;
+    --info-bg: 234 242 255;
+    --info-fg: 0 85 184;
+    --danger-bg: 255 233 233;
+    --danger-fg: 189 42 42;
 
-    --warning-bg: 255 244 229;
-    --warning-fg: 178 94 0;
-    --success-bg: 231 246 236;
-    --success-fg: 27 127 66;
-    --info-bg: 234 240 255;
-    --info-fg: 45 66 186;
-
-    /* Vidro: superficie translucida que deixa o conteudo passar por baixo. */
-    --glass: 255 255 255;
-    --glass-alpha: 0.62;
-    --glass-edge: 255 255 255;
-    --glass-edge-alpha: 0.7;
-
-    --shadow-card: 0 1px 2px rgb(16 16 20 / 0.04), 0 6px 20px rgb(16 16 20 / 0.06);
-    --shadow-pop: 0 2px 6px rgb(16 16 20 / 0.06), 0 20px 50px rgb(16 16 20 / 0.14);
-    --shadow-press: inset 0 1px 2px rgb(16 16 20 / 0.08);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.05);
+    --shadow-pop: 0 2px 8px rgb(0 0 0 / 0.06), 0 20px 48px rgb(0 0 0 / 0.16);
+    --shadow-lift: 0 6px 16px rgb(0 0 0 / 0.1), 0 16px 32px rgb(0 0 0 / 0.12);
   }
 
   .dark {
-    --surface-canvas: 8 8 11;
-    --surface-card: 20 20 25;
-    --surface-sunken: 28 28 35;
+    --surface-canvas: 0 0 0;
+    --surface-card: 28 28 30;
+    --surface-sunken: 44 44 46;
 
-    --ink: 245 245 247;
-    --ink-soft: 160 160 172;
-    --ink-muted: 110 110 122;
-    --ink-inverse: 16 16 20;
+    --ink: 255 255 255;
+    --ink-soft: 174 174 178;
+    --ink-muted: 142 142 147;
 
-    --line: 38 38 46;
-    --line-strong: 53 53 63;
+    --line: 56 56 58;
+    --line-strong: 84 84 88;
 
-    --brand-50: 30 34 62;
-    --brand-100: 40 47 88;
-    --brand-500: 122 143 255;
-    --brand-600: 107 128 255;
-    --brand-700: 145 163 255;
+    --brand-50: 20 34 58;
+    --brand-100: 26 48 84;
+    --brand-500: 10 132 255;
+    --brand-600: 33 145 255;
+    --brand-700: 92 174 255;
 
-    /* Um pouco mais saturado no escuro para o gradiente nao apagar. */
-    --accent-warm: 255 176 92;
-    --accent-mid: 255 106 122;
-    --accent-cool: 108 122 255;
+    --warning-bg: 58 42 16;
+    --warning-fg: 255 179 64;
+    --success-bg: 18 48 30;
+    --success-fg: 92 214 134;
+    --info-bg: 20 38 66;
+    --info-fg: 100 168 255;
+    --danger-bg: 60 22 22;
+    --danger-fg: 255 123 123;
 
-    --warning-bg: 58 41 16;
-    --warning-fg: 253 197 118;
-    --success-bg: 18 48 31;
-    --success-fg: 122 224 163;
-    --info-bg: 26 33 66;
-    --info-fg: 158 176 255;
-
-    --glass: 255 255 255;
-    --glass-alpha: 0.06;
-    --glass-edge: 255 255 255;
-    --glass-edge-alpha: 0.1;
-
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.4);
     --shadow-pop: 0 4px 12px rgb(0 0 0 / 0.5), 0 24px 60px rgb(0 0 0 / 0.6);
-    --shadow-press: inset 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lift: 0 8px 20px rgb(0 0 0 / 0.55), 0 16px 40px rgb(0 0 0 / 0.5);
   }
 
   html {
@@ -101,16 +86,16 @@
   }
 
   ::selection {
-    @apply bg-accent-mid/30;
+    @apply bg-brand-500/25;
   }
 
   /* Foco visivel e consistente para teclado, no lugar do anel do navegador.
      Nunca remover sem repor: e a unica pista de posicao pra quem usa Tab. */
   :focus-visible {
-    outline: 2px solid rgb(var(--accent-cool));
+    outline: 2px solid rgb(var(--brand-500));
     outline-offset: 2px;
   }
-  /* O mouse nao precisa do anel; os campos ja mostram foco pelo ring proprio. */
+  /* Os campos ja mostram foco pelo ring proprio. */
   .field:focus-visible {
     outline: none;
   }
@@ -119,50 +104,17 @@
 @layer components {
   /* --- Superficies ------------------------------------------------------ */
 
-  /* Cartao solido: para conteudo que precisa de leitura firme. */
   .card {
     @apply rounded-card border border-line bg-surface-card shadow-card;
   }
 
-  /* Vidro: chrome flutuante, com o conteudo passando por baixo. Superficie
-     grande deve parecer mais "grossa": blur maior que um chip pequeno. */
+  /* Chrome flutuante (barra de abas, botao fixo). Translucido de leve, para
+     o conteudo passar por baixo sem roubar a atencao. */
   .glass {
-    background: rgb(var(--glass) / var(--glass-alpha));
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgb(var(--glass-edge) / var(--glass-edge-alpha));
-    @apply rounded-card shadow-card;
-  }
-
-  /* Brilho ambiente do fundo (as referencias escuras vivem disso). */
-  .ambient {
-    @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
-  }
-  .ambient::before,
-  .ambient::after {
-    content: "";
-    @apply absolute rounded-full;
-    filter: blur(110px);
-  }
-  .ambient::before {
-    background: rgb(var(--accent-warm) / 0.26);
-    width: 30rem;
-    height: 30rem;
-    top: -13rem;
-    right: -9rem;
-  }
-  .ambient::after {
-    background: rgb(var(--accent-cool) / 0.18);
-    width: 32rem;
-    height: 32rem;
-    bottom: -15rem;
-    left: -11rem;
-  }
-  .dark .ambient::before {
-    background: rgb(var(--accent-mid) / 0.22);
-  }
-  .dark .ambient::after {
-    background: rgb(var(--accent-cool) / 0.24);
+    background: rgb(var(--surface-card) / 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    @apply rounded-card border border-line shadow-card;
   }
 
   /* --- Controles -------------------------------------------------------- */
@@ -175,14 +127,10 @@
            disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
   }
   .btn-primary {
-    @apply btn bg-brand text-white;
-    box-shadow: 0 4px 14px rgb(var(--accent-cool) / 0.32);
-  }
-  .btn-primary:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgb(var(--accent-cool) / 0.42);
+    @apply btn bg-brand-500 text-white hover:bg-brand-600;
   }
   .btn-ghost {
-    @apply btn border border-line-strong bg-surface-card text-ink hover:bg-surface-sunken;
+    @apply btn border border-line bg-surface-card text-ink hover:bg-surface-sunken;
   }
   .btn-quiet {
     @apply btn text-ink-soft hover:bg-surface-sunken hover:text-ink;
@@ -201,32 +149,10 @@
 
   /* Scrim do modal: escurece e desfoca o que fica atras. */
   .scrim {
-    @apply bg-ink/40 backdrop-blur-md;
+    @apply bg-black/35 backdrop-blur-md;
   }
   .dark .scrim {
     @apply bg-black/65;
-  }
-
-  /* --- Realces ---------------------------------------------------------- */
-
-  /* Texto pintado pelo gradiente-assinatura. */
-  .text-gradient {
-    @apply bg-brand bg-clip-text text-transparent;
-  }
-
-  /* Moldura de gradiente com miolo da cor da superficie. */
-  .ring-gradient {
-    background: linear-gradient(
-        135deg,
-        rgb(var(--accent-warm)),
-        rgb(var(--accent-mid)) 45%,
-        rgb(var(--accent-cool))
-      )
-      border-box;
-    border: 1.5px solid transparent;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
   }
 }
 
@@ -248,13 +174,9 @@
     background: rgb(var(--surface-card));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    @apply border-line;
   }
   .scrim {
     @apply backdrop-blur-none;
-  }
-  .ambient {
-    display: none;
   }
 }
 

@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 // Os valores das cores vivem como CSS variables em app/globals.css, em canais
 // RGB, para o mesmo token servir tema claro e escuro e ainda aceitar opacidade
-// (ex.: bg-surface-card/60). Trocar de tema = trocar as variaveis, nao as
+// (ex.: bg-brand-500/10). Trocar de tema = trocar as variaveis, nao as
 // classes dos componentes.
 const config: Config = {
   darkMode: "class",
@@ -19,24 +19,18 @@ const config: Config = {
           DEFAULT: "rgb(var(--ink) / <alpha-value>)",
           soft: "rgb(var(--ink-soft) / <alpha-value>)",
           muted: "rgb(var(--ink-muted) / <alpha-value>)",
-          inverse: "rgb(var(--ink-inverse) / <alpha-value>)",
         },
         line: {
           DEFAULT: "rgb(var(--line) / <alpha-value>)",
           strong: "rgb(var(--line-strong) / <alpha-value>)",
         },
+        // Azul unico de acento, no espirito do system blue da Apple.
         brand: {
           50: "rgb(var(--brand-50) / <alpha-value>)",
           100: "rgb(var(--brand-100) / <alpha-value>)",
           500: "rgb(var(--brand-500) / <alpha-value>)",
           600: "rgb(var(--brand-600) / <alpha-value>)",
           700: "rgb(var(--brand-700) / <alpha-value>)",
-        },
-        // Paradas do gradiente-assinatura (laranja -> coral -> indigo).
-        accent: {
-          warm: "rgb(var(--accent-warm) / <alpha-value>)",
-          mid: "rgb(var(--accent-mid) / <alpha-value>)",
-          cool: "rgb(var(--accent-cool) / <alpha-value>)",
         },
         warning: {
           bg: "rgb(var(--warning-bg) / <alpha-value>)",
@@ -50,21 +44,24 @@ const config: Config = {
           bg: "rgb(var(--info-bg) / <alpha-value>)",
           fg: "rgb(var(--info-fg) / <alpha-value>)",
         },
+        danger: {
+          bg: "rgb(var(--danger-bg) / <alpha-value>)",
+          fg: "rgb(var(--danger-fg) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
       },
       borderRadius: {
-        // Cantos generosos como nas referencias.
-        card: "1.5rem", // 24px
-        control: "0.875rem", // 14px
+        card: "1.25rem", // 20px
+        control: "0.75rem", // 12px
         pill: "999px",
       },
       boxShadow: {
         // Sombras vem de variavel: no escuro elas mudam de receita.
         card: "var(--shadow-card)",
         pop: "var(--shadow-pop)",
-        press: "var(--shadow-press)",
+        lift: "var(--shadow-lift)",
       },
       fontSize: {
         // Escala em rem (respeita o tamanho de fonte do usuario) com tracking
@@ -93,13 +90,6 @@ const config: Config = {
           "0.75rem",
           { lineHeight: "1.4", fontWeight: "400", letterSpacing: "0.01em" },
         ],
-      },
-      backgroundImage: {
-        // Gradiente-assinatura, na diagonal das referencias.
-        brand:
-          "linear-gradient(135deg, rgb(var(--accent-warm)) 0%, rgb(var(--accent-mid)) 45%, rgb(var(--accent-cool)) 100%)",
-        "brand-soft":
-          "linear-gradient(135deg, rgb(var(--accent-warm) / 0.18) 0%, rgb(var(--accent-mid) / 0.18) 45%, rgb(var(--accent-cool) / 0.18) 100%)",
       },
     },
   },

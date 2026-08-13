@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { GrupoAluno, StatusAprovacao } from "@/lib/supabase";
+import { SeloAutorizacao } from "./SeloAutorizacao";
 
 const STATUS: Record<StatusAprovacao, { texto: string; classe: string }> = {
   pendente: { texto: "Pendente", classe: "bg-warning-bg text-warning-fg" },
@@ -29,19 +30,21 @@ export function CardAprovacao({
   const recente = grupo.aprovacoes[0];
   const s = STATUS[recente.status];
   const varios = grupo.aprovacoes.length > 1;
+  // Se qualquer envio do aluno não tem autorização, a fila precisa avisar.
+  const algumSemAutorizacao = grupo.aprovacoes.some((a) => !a.autoriza_postagem);
   const reduzMovimento = useReducedMotion();
 
-  // min-w-0 no card: sem isso o item de grid nao encolhe abaixo do proprio
-  // min-content e um email longo estoura a largura da tela no celular.
+  // min-w-0 no card: sem isso o item de grid não encolhe abaixo do próprio
+  // min-content e um e-mail longo estoura a largura da tela no celular.
   return (
     <motion.button
       onClick={onClick}
-      className="glass group flex w-full min-w-0 items-center gap-3 p-3 text-left transition-colors sm:gap-4 sm:p-4"
+      className="card flex w-full min-w-0 items-center gap-3 p-3 text-left transition-colors hover:border-line-strong sm:gap-4 sm:p-4"
       whileTap={reduzMovimento ? undefined : { scale: 0.985 }}
       whileHover={reduzMovimento ? undefined : { y: -2 }}
       transition={{ type: "spring", bounce: 0, duration: 0.3 }}
     >
-      <span className="bg-brand text-label flex h-11 w-11 shrink-0 items-center justify-center rounded-pill font-semibold text-white sm:h-12 sm:w-12">
+      <span className="bg-brand-500 text-label flex h-11 w-11 shrink-0 items-center justify-center rounded-pill font-semibold text-white sm:h-12 sm:w-12">
         {iniciais(grupo.nome)}
       </span>
 
@@ -63,12 +66,9 @@ export function CardAprovacao({
         </span>
       </span>
 
-      {recente.responsavel && (
-        <span
-          className="text-caption text-ink-soft hidden h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-sunken sm:flex"
-          title={`Responsavel: ${recente.responsavel}`}
-        >
-          {iniciais(recente.responsavel)}
+      {algumSemAutorizacao && (
+        <span className="hidden shrink-0 sm:block">
+          <SeloAutorizacao autoriza={false} />
         </span>
       )}
 

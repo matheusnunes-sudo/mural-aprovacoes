@@ -3,46 +3,30 @@
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
-type Item = { id: string; texto: string; feito: boolean; responsavel: string };
+type Item = { id: string; texto: string; feito: boolean };
 
 const postagensIniciais: Item[] = [
-  { id: "p1", texto: "Card Julia Santos - Instagram", feito: true, responsavel: "Matheus" },
-  { id: "p2", texto: "Story Pedro Lima", feito: false, responsavel: "Gabriel" },
-  { id: "p3", texto: "Reels aprovados UFBA", feito: false, responsavel: "Pedro" },
+  { id: "p1", texto: "Card Júlia Santos - Instagram", feito: true },
+  { id: "p2", texto: "Story Pedro Lima", feito: false },
+  { id: "p3", texto: "Reels aprovados UFBA", feito: false },
 ];
 
 const designsIniciais: Item[] = [
-  { id: "d1", texto: "Template base aprovacao 2026", feito: true, responsavel: "Matheus" },
-  { id: "d2", texto: "Card Ana Costa", feito: false, responsavel: "Gabriel" },
-  { id: "d3", texto: "Ajuste manual Rafael Souza", feito: false, responsavel: "Matheus" },
+  { id: "d1", texto: "Template base aprovação 2026", feito: true },
+  { id: "d2", texto: "Card Ana Costa", feito: false },
+  { id: "d3", texto: "Ajuste manual Rafael Souza", feito: false },
 ];
 
-export function Checklists({ responsaveis }: { responsaveis: string[] }) {
+export function Checklists() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Coluna
-        titulo="Postagens do dia"
-        inicial={postagensIniciais}
-        responsaveis={responsaveis}
-      />
-      <Coluna
-        titulo="Designs do dia"
-        inicial={designsIniciais}
-        responsaveis={responsaveis}
-      />
+      <Coluna titulo="Postagens do dia" inicial={postagensIniciais} />
+      <Coluna titulo="Designs do dia" inicial={designsIniciais} />
     </div>
   );
 }
 
-function Coluna({
-  titulo,
-  inicial,
-  responsaveis,
-}: {
-  titulo: string;
-  inicial: Item[];
-  responsaveis: string[];
-}) {
+function Coluna({ titulo, inicial }: { titulo: string; inicial: Item[] }) {
   const [itens, setItens] = useState(inicial);
   const [novo, setNovo] = useState("");
   const feitos = itens.filter((i) => i.feito).length;
@@ -50,29 +34,23 @@ function Coluna({
   const reduzMovimento = useReducedMotion();
 
   function toggle(id: string) {
-    setItens((is) => is.map((i) => (i.id === id ? { ...i, feito: !i.feito } : i)));
-  }
-  function setResp(id: string, r: string) {
-    setItens((is) => is.map((i) => (i.id === id ? { ...i, responsavel: r } : i)));
+    setItens((is) =>
+      is.map((i) => (i.id === id ? { ...i, feito: !i.feito } : i))
+    );
   }
   function adicionar() {
     if (!novo.trim()) return;
     setItens((is) => [
       ...is,
-      {
-        id: crypto.randomUUID(),
-        texto: novo.trim(),
-        feito: false,
-        responsavel: responsaveis[0],
-      },
+      { id: crypto.randomUUID(), texto: novo.trim(), feito: false },
     ]);
     setNovo("");
   }
 
+  // min-w-0: sem isso o item de grid não encolhe abaixo do próprio
+  // min-content e a coluna estoura a largura da tela no celular.
   return (
-    // min-w-0: sem isso o item de grid nao encolhe abaixo do proprio
-    // min-content e a coluna estoura a largura da tela no celular.
-    <div className="glass min-w-0 p-5 sm:p-6">
+    <div className="card min-w-0 p-5 sm:p-6">
       <div className="mb-1 flex items-center justify-between gap-3">
         <h3 className="text-label font-semibold">{titulo}</h3>
         <span className="text-caption text-ink-soft tabular-nums">
@@ -80,10 +58,10 @@ function Coluna({
         </span>
       </div>
 
-      {/* Barra de progresso: status visivel sem precisar contar os itens. */}
+      {/* Barra de progresso: status visível sem precisar contar os itens. */}
       <div className="mb-4 h-1.5 overflow-hidden rounded-pill bg-surface-sunken">
         <motion.div
-          className="bg-brand h-full rounded-pill"
+          className="bg-brand-500 h-full rounded-pill"
           initial={false}
           animate={{ width: `${progresso}%` }}
           transition={{ type: "spring", bounce: 0, duration: 0.4 }}
@@ -111,8 +89,8 @@ function Coluna({
                 aria-label={i.texto}
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
                   i.feito
-                    ? "bg-brand border-transparent text-white"
-                    : "border-line-strong bg-surface-card hover:border-accent-mid"
+                    ? "bg-brand-500 border-transparent text-white"
+                    : "border-line-strong bg-surface-card hover:border-brand-500"
                 }`}
               >
                 {i.feito && (
@@ -139,17 +117,6 @@ function Coluna({
               >
                 {i.texto}
               </span>
-
-              <select
-                className="text-caption text-ink-soft shrink-0 rounded-pill border border-line bg-surface-card px-2.5 py-1 outline-none focus:border-brand-500"
-                value={i.responsavel}
-                onChange={(e) => setResp(i.id, e.target.value)}
-                aria-label={`Responsavel por ${i.texto}`}
-              >
-                {responsaveis.map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
             </motion.li>
           ))}
         </AnimatePresence>

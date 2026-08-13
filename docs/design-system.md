@@ -10,9 +10,10 @@ do `globals.css`.
 - Apple (HIG + Designing Fluid Interfaces): clareza acima de decoracao,
   hierarquia por tipografia e espacamento, materiais translucidos, movimento
   fisico e interrompivel. Ver `APPLE_DESIGN_SKILL.md` na raiz.
-- Soft UI / glassmorphism (refs do cliente): cantos muito generosos,
-  superficies de vidro, brilho ambiente de fundo, gradiente quente-para-frio
-  como assinatura, tipografia bold com tracking apertado.
+- Apple, na paleta: fundo liso, sem gradiente decorativo, hierarquia por
+  elevacao e hairline, e UM azul de acento (system blue) reservado ao que e
+  interativo ou esta em foco. Cantos generosos e tipografia bold com tracking
+  apertado.
 - ClickUp: densidade de informacao organizada, badges de status discretos,
   filtros no topo da lista.
 - Plataforma Assaad: a marca. Trocar `--brand-*` nos tokens pelo hex oficial.
@@ -44,30 +45,25 @@ Texto: `ink` primario / `ink-soft` secundario / `ink-muted` dicas /
 
 Linhas: `line` (hairline) / `line-strong` (enfase).
 
-Marca: `brand-50/100/500/600/700`.
+Marca: `brand-50/100/500/600/700` — o azul de acento, unica cor de destaque.
 
-Gradiente-assinatura: `accent-warm` (laranja) -> `accent-mid` (coral) ->
-`accent-cool` (indigo). Use pela classe utilitaria `bg-brand` (fundo) ou
-`text-gradient` (texto), nunca remontando o `linear-gradient` na mao.
-
-Estados: `warning`, `success`, `info` (cada um com `.bg` e `.fg`).
+Estados: `warning`, `success`, `info`, `danger` (cada um com `.bg` e `.fg`).
+`danger` e reservado a falta de autorizacao de postagem.
 
 ## Classes de componente
 
-- `.card` - superficie solida, para conteudo que precisa de leitura firme.
-- `.glass` - superficie translucida com blur, para chrome flutuante e cards
-  da fila. **Nunca empilhe vidro sobre vidro**: a legibilidade colapsa.
-- `.ambient` - brilho de fundo (uma instancia por pagina, no layout).
-- `.btn` / `.btn-primary` (pilula com gradiente) / `.btn-ghost` / `.btn-quiet`.
+- `.card` - superficie solida, o padrao para conteudo.
+- `.glass` - superficie levemente translucida com blur, so para chrome
+  flutuante (barra de abas). **Nunca empilhe vidro sobre vidro.**
+- `.btn` / `.btn-primary` (azul solido) / `.btn-ghost` / `.btn-quiet`.
 - `.field` - inputs, selects e textareas.
 - `.badge` - pilula de status.
 - `.scrim` - fundo escuro + blur atras de modal.
-- `.text-gradient` - texto pintado pelo gradiente.
 
 ## Regras
 
 1. Nunca hardcode cor ou espacamento. Use tokens.
-2. Cantos: `rounded-card` (24px) para cartoes, `rounded-control` (14px) para
+2. Cantos: `rounded-card` (20px) para cartoes, `rounded-control` (12px) para
    campos, `rounded-pill` para botoes, badges e avatares.
 3. Sombras vem de token (`shadow-card`, `shadow-pop`) porque a receita muda
    entre os temas.
@@ -77,11 +73,13 @@ Estados: `warning`, `success`, `info` (cada um com `.bg` e `.fg`).
 5. Escala em `rem`, nao `px`, para respeitar o tamanho de fonte do usuario.
 6. Sentence case em labels e botoes. Verbo primeiro nos botoes ("Salvar
    depoimento", nao "Enviar").
-7. Gradiente e assinatura, nao papel de parede: use em um elemento de
-   destaque por tela (CTA principal, metrica em foco, avatar, titulo). Tela
-   com gradiente em tudo perde a hierarquia.
+7. **Sem gradiente decorativo.** O fundo e liso. O azul de acento e reservado
+   ao que e interativo ou esta em foco (CTA, metrica em destaque, avatar,
+   item selecionado); pintar tudo de azul destroi a hierarquia igual.
 8. Sem emoji na UI. Icones sao SVG inline com `stroke="currentColor"`, para
    herdarem a cor do tema.
+9. Todo texto de interface e em portugues **com acentuacao correta**. So
+   identificadores de codigo (variaveis, chaves, ids) ficam em ASCII.
 
 ## Movimento (Apple / fluid interfaces)
 
@@ -99,7 +97,11 @@ Usamos `framer-motion` para o que e tocado ou arrastado; CSS puro
 4. **`prefers-reduced-motion`.** Checar `useReducedMotion()` antes de aplicar
    scale/position; nesse caso, cair para fade de opacidade.
 5. **`prefers-reduced-transparency` e `prefers-contrast`.** Ja tratados no fim
-   do `globals.css`: o vidro vira solido e o brilho ambiente desaparece.
+   do `globals.css`: o vidro vira solido.
+7. **Nenhuma acao pode existir so no arrasto.** Arrastar nao funciona no
+   teclado e e fragil no toque. O Kanban move card por botoes `‹ ›`; o
+   arrasto e um extra. Toda interacao por gesto precisa de um equivalente
+   clicavel.
 6. **Foco visivel.** `:focus-visible` tem anel proprio na cor da marca. Nunca
    remover sem repor: e a unica pista de posicao para quem navega por teclado.
 

@@ -3,11 +3,14 @@ import type { Aprovacao } from "./supabase";
 // Dados de exemplo. Substituidos automaticamente pelos dados reais
 // assim que o Supabase estiver configurado.
 // Julia Santos aparece duas vezes de proposito: e o caso de dois envios do
-// mesmo email, que o painel mostra agrupado.
+// mesmo email, que o painel mostra agrupado. Rafael Souza nao autoriza a
+// postagem: e o caso que a equipe precisa enxergar antes de gastar design.
+// Os depoimentos "original" ficam com os erros de digitacao de proposito —
+// e o que a correcao por IA existe para arrumar.
 export const aprovacoesMock: Aprovacao[] = [
   {
     id: "1",
-    nome: "Julia Santos",
+    nome: "Júlia Santos",
     email: "julia.santos@email.com",
     curso: "Medicina",
     faculdade: "UFBA",
@@ -18,11 +21,12 @@ export const aprovacoesMock: Aprovacao[] = [
     comprovante_url: null,
     status: "pendente",
     responsavel: "Matheus",
+    autoriza_postagem: true,
     criado_em: "2026-08-10T09:00:00Z",
   },
   {
     id: "6",
-    nome: "Julia Santos",
+    nome: "Júlia Santos",
     email: "julia.santos@email.com",
     curso: "Medicina",
     faculdade: "UFRB",
@@ -33,6 +37,7 @@ export const aprovacoesMock: Aprovacao[] = [
     comprovante_url: null,
     status: "pendente",
     responsavel: null,
+    autoriza_postagem: true,
     criado_em: "2026-08-11T19:30:00Z",
   },
   {
@@ -49,6 +54,7 @@ export const aprovacoesMock: Aprovacao[] = [
     comprovante_url: null,
     status: "design_pronto",
     responsavel: "Gabriel",
+    autoriza_postagem: true,
     criado_em: "2026-08-09T14:20:00Z",
   },
   {
@@ -60,11 +66,12 @@ export const aprovacoesMock: Aprovacao[] = [
     depoimento_original:
       "realizei o sonho de entrar em medicina depois de muito esforco e dedicacao com o apoio dos professores",
     depoimento_corrigido:
-      "Realizei o sonho de entrar em Medicina depois de muito esforco e dedicacao, com o apoio dos professores.",
+      "Realizei o sonho de entrar em Medicina depois de muito esforço e dedicação, com o apoio dos professores.",
     foto_url: null,
     comprovante_url: null,
     status: "postado",
     responsavel: "Pedro",
+    autoriza_postagem: true,
     criado_em: "2026-08-05T11:00:00Z",
   },
   {
@@ -80,6 +87,7 @@ export const aprovacoesMock: Aprovacao[] = [
     comprovante_url: null,
     status: "pendente",
     responsavel: "Matheus",
+    autoriza_postagem: false,
     criado_em: "2026-08-11T08:15:00Z",
   },
   {
@@ -96,6 +104,7 @@ export const aprovacoesMock: Aprovacao[] = [
     comprovante_url: null,
     status: "design_pronto",
     responsavel: "Gabriel",
+    autoriza_postagem: true,
     criado_em: "2026-08-08T16:40:00Z",
   },
 ];

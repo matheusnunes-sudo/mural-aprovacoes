@@ -5,6 +5,8 @@ import { motion, useReducedMotion } from "framer-motion";
 
 // Alterna claro/escuro e lembra a escolha. Enquanto o usuario nao escolher,
 // o app segue o sistema (a decisao inicial acontece no script de layout.tsx).
+// Fica fixo no canto superior direito: sempre no mesmo lugar, em qualquer
+// pagina e em qualquer scroll.
 export function TemaToggle() {
   const [escuro, setEscuro] = useState(false);
   const [montado, setMontado] = useState(false);
@@ -31,13 +33,25 @@ export function TemaToggle() {
       onClick={alternar}
       whileTap={reduzMovimento ? undefined : { scale: 0.92 }}
       transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-      className="glass flex h-11 w-11 shrink-0 items-center justify-center rounded-pill text-ink-soft transition-colors hover:text-ink"
+      // Superficie solida + hairline: no escuro um botao translucido sobre
+      // fundo preto simplesmente some.
+      className="fixed right-4 top-4 z-50 flex h-11 w-11 items-center justify-center
+                 rounded-pill border border-line bg-surface-card text-ink shadow-card
+                 transition-colors hover:bg-surface-sunken sm:right-6 sm:top-6"
       aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"}
       title={escuro ? "Usar tema claro" : "Usar tema escuro"}
     >
-      {/* Antes de montar nao sabemos o tema: um placeholder evita o icone
-          errado aparecer por um frame. */}
-      {montado ? escuro ? <IconeSol /> : <IconeLua /> : <span className="h-5 w-5" />}
+      {/* Antes de montar nao sabemos o tema: um placeholder do mesmo tamanho
+          evita o icone errado aparecer por um frame. */}
+      {montado ? (
+        escuro ? (
+          <IconeSol />
+        ) : (
+          <IconeLua />
+        )
+      ) : (
+        <span className="h-5 w-5" />
+      )}
     </motion.button>
   );
 }

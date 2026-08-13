@@ -1,41 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TemaToggle } from "./TemaToggle";
 
 export function PainelHeader({
   aba,
   onAba,
   alunos,
   pendentes,
+  semAutorizacao,
 }: {
   aba: "fila" | "checklists";
   onAba: (a: "fila" | "checklists") => void;
   alunos: number;
   pendentes: number;
+  semAutorizacao: number;
 }) {
   return (
     <header className="mb-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-label text-gradient font-semibold">
-            Assaad Educacao
-          </p>
-          <h1 className="text-display mt-1">Mural de aprovacoes</h1>
-        </div>
-        <TemaToggle />
+      {/* pr-14: espaço para o botão de tema, que é fixo no canto. */}
+      <div className="pr-14">
+        <p className="text-label text-brand-600 font-semibold">
+          Assaad Educação
+        </p>
+        <h1 className="text-display mt-1">Mural de aprovações</h1>
       </div>
 
-      {/* Metricas: no celular ocupam a largura, lado a lado. */}
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-xs">
+      <div className="mt-5 grid grid-cols-3 gap-2 sm:max-w-lg sm:gap-3">
         <Metrica label="Alunos" valor={alunos} />
         <Metrica label="Pendentes" valor={pendentes} destaque />
+        <Metrica label="Sem autorização" valor={semAutorizacao} alerta />
       </div>
 
-      {/* Abas em pilula de vidro: o indicador desliza entre as posicoes. */}
+      {/* Abas em pílula: o indicador desliza entre as posições. */}
       <nav className="glass mt-6 inline-flex w-full gap-1 rounded-pill p-1 sm:w-auto">
         <Tab ativo={aba === "fila"} onClick={() => onAba("fila")}>
-          Aprovacoes
+          Aprovações
         </Tab>
         <Tab ativo={aba === "checklists"} onClick={() => onAba("checklists")}>
           Checklist do dia
@@ -49,21 +48,25 @@ function Metrica({
   label,
   valor,
   destaque,
+  alerta,
 }: {
   label: string;
   valor: number;
   destaque?: boolean;
+  alerta?: boolean;
 }) {
+  const cor = destaque
+    ? "bg-brand-500 text-white"
+    : alerta && valor > 0
+      ? "bg-danger-bg text-danger-fg border border-transparent"
+      : "border border-line bg-surface-card text-ink";
+
   return (
-    <div
-      className={`rounded-control px-4 py-3 ${
-        destaque
-          ? "bg-brand text-white"
-          : "border border-line bg-surface-card text-ink"
-      }`}
-    >
+    <div className={`rounded-control px-3 py-2.5 sm:px-4 sm:py-3 ${cor}`}>
       <p
-        className={`text-caption ${destaque ? "text-white/75" : "text-ink-soft"}`}
+        className={`text-caption ${
+          destaque ? "text-white/75" : alerta && valor > 0 ? "" : "text-ink-soft"
+        }`}
       >
         {label}
       </p>

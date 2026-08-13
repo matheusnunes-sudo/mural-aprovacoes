@@ -13,6 +13,8 @@ create table if not exists aprovacoes (
   comprovante_url text,
   status text not null default 'pendente',
   responsavel text,
+  -- O aluno autorizou publicar? Quem nao autoriza nao entra na producao.
+  autoriza_postagem boolean not null default true,
   criado_em timestamptz not null default now()
 );
 
@@ -23,6 +25,9 @@ create index if not exists aprovacoes_email_idx on aprovacoes (email);
 --   alter table aprovacoes add column if not exists email text;
 --   update aprovacoes set email = '' where email is null;
 --   alter table aprovacoes alter column email set not null;
+-- E sem a coluna de autorizacao:
+--   alter table aprovacoes
+--     add column if not exists autoriza_postagem boolean not null default true;
 -- As colunas cidade/uf sairam do formulario na V1. Se existirem, podem
 -- ficar (sao nullable) ate a definicao final das perguntas.
 

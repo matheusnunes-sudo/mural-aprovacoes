@@ -6,12 +6,15 @@ para os times de IA e TI evoluirem.
 
 ## O que ja funciona
 
-- Formulario publico do aluno (`/`), com email validado
+- Formulario publico do aluno (`/`), com email validado e autorizacao de post
 - Painel da equipe (`/painel`) com senha simples de demonstracao
-- Fila de aprovacoes com filtros por curso, faculdade e status
+- Tres visualizacoes das aprovacoes: **lista**, **Kanban** por etapa e
+  **planilha** (com exportacao CSV)
+- Filtros por curso, faculdade, status e autorizacao de postagem
 - Envios do mesmo email aparecem agrupados como um aluno so
 - Detalhe do aluno com correcao de depoimento por IA (antes/depois editavel)
-- Checklists de postagens e designs do dia, com responsavel por tarefa
+- Checklists de postagens e designs do dia
+- Tema claro e escuro (segue o sistema, com botao para trocar)
 - Roda com dados de exemplo mesmo sem backend configurado
 
 Atencao: os campos de foto e comprovante sao demonstracao. O arquivo aparece

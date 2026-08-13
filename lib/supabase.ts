@@ -15,6 +15,14 @@ export const supabase = supabaseConfigurado
 
 export type StatusAprovacao = "pendente" | "design_pronto" | "postado";
 
+// Etapas do processo, na ordem em que acontecem. E a fonte da ordem das
+// colunas do Kanban e das opcoes de status em todo o painel.
+export const ETAPAS: { id: StatusAprovacao; titulo: string }[] = [
+  { id: "pendente", titulo: "Pendente" },
+  { id: "design_pronto", titulo: "Design pronto" },
+  { id: "postado", titulo: "Postado" },
+];
+
 export type Aprovacao = {
   id: string;
   nome: string;
@@ -29,6 +37,9 @@ export type Aprovacao = {
   comprovante_url: string | null;
   status: StatusAprovacao;
   responsavel: string | null;
+  // O aluno autorizou publicar o depoimento? Quem nao autoriza NAO deve
+  // entrar na producao de design — e o filtro mais importante do painel.
+  autoriza_postagem: boolean;
   criado_em: string;
 };
 

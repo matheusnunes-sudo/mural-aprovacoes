@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { TemaToggle } from "@/components/TemaToggle";
 
 export const metadata: Metadata = {
-  title: "Mural de Aprovacoes | Assaad Educacao",
-  description: "Colete depoimentos e aprovacoes dos alunos.",
+  title: "Mural de Aprovações | Assaad Educação",
+  description: "Colete depoimentos e aprovações dos alunos.",
 };
 
 export const viewport: Viewport = {
@@ -11,8 +12,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   // A cor da barra do navegador acompanha o tema.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#E8E8ED" },
-    { media: "(prefers-color-scheme: dark)", color: "#08080B" },
+    { media: "(prefers-color-scheme: light)", color: "#F2F2F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
 };
 
@@ -51,7 +52,8 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <div className="ambient" aria-hidden />
+        {/* Fixo em todas as paginas, sempre no mesmo canto. */}
+        <TemaToggle />
         {children}
       </body>
     </html>
