@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ETAPAS } from "@/lib/supabase";
 import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
 import { SeloAutorizacao } from "./SeloAutorizacao";
+import { CORES_ETAPA } from "./SeloStatus";
 
 // Cada envio (não cada aluno) é um card: o status pertence ao depoimento,
 // não à pessoa.
@@ -50,6 +51,7 @@ export function KanbanAprovacoes({
       {ETAPAS.map((etapa, indiceEtapa) => {
         const daEtapa = aprovacoes.filter((a) => a.status === etapa.id);
         const destacada = alvo === etapa.id;
+        const cores = CORES_ETAPA[etapa.id];
 
         return (
           <div
@@ -58,14 +60,20 @@ export function KanbanAprovacoes({
               if (el) colunas.current[etapa.id] = el;
             }}
             className={`w-[17rem] shrink-0 snap-start rounded-card border p-3 transition-colors sm:w-auto sm:flex-1 ${
-              destacada
-                ? "border-brand-500 bg-brand-500/5"
-                : "border-line bg-surface-sunken/50"
+              destacada ? "border-brand-500 bg-brand-500/10" : cores.coluna
             }`}
           >
-            <div className="mb-3 flex items-center justify-between px-1">
-              <h3 className="text-label font-semibold">{etapa.titulo}</h3>
-              <span className="text-caption text-ink-soft tabular-nums">
+            <div className="mb-3 flex items-center gap-2 px-1">
+              <span
+                className={`h-2 w-2 shrink-0 rounded-pill ${cores.ponto}`}
+                aria-hidden
+              />
+              <h3 className={`text-label font-semibold ${cores.cabecalho}`}>
+                {etapa.titulo}
+              </h3>
+              <span
+                className={`text-caption ml-auto tabular-nums ${cores.cabecalho}`}
+              >
                 {daEtapa.length}
               </span>
             </div>
@@ -75,7 +83,7 @@ export function KanbanAprovacoes({
                 <motion.article
                   key={a.id}
                   layout
-                  drag={reduzMovimento ? false : true}
+                  drag={!reduzMovimento}
                   dragSnapToOrigin
                   dragElastic={0.12}
                   onDragStart={() => {
@@ -113,15 +121,18 @@ export function KanbanAprovacoes({
                     <p className="text-caption text-ink-soft mt-0.5 truncate">
                       {a.curso} · {a.faculdade}
                     </p>
+
+                    {a.selos.length > 0 && (
+                      <p className="text-caption text-brand-600 mt-1.5 truncate">
+                        {a.selos.join(" · ")}
+                      </p>
+                    )}
                   </button>
 
                   <div className="mt-2.5 flex items-center gap-1.5">
-                    <SeloAutorizacao autoriza={a.autoriza_postagem} />
-                    {a.responsavel && (
-                      <span className="badge truncate bg-surface-sunken text-ink-soft">
-                        {a.responsavel}
-                      </span>
-                    )}
+                    {/* Só a exceção aparece: "autoriza" é o caso normal e um
+                        selo verde em quase todo card vira ruído. */}
+                    {!a.autoriza_postagem && <SeloAutorizacao autoriza={false} />}
 
                     <div className="ml-auto flex shrink-0 gap-0.5">
                       <BotaoMover

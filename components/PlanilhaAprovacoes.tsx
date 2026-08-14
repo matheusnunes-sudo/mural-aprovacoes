@@ -2,7 +2,8 @@
 
 import { ETAPAS } from "@/lib/supabase";
 import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
-import { Interruptor } from "./Interruptor";
+import { SeloAutorizacao } from "./SeloAutorizacao";
+import { CORES_ETAPA, tituloEtapa } from "./SeloStatus";
 
 const COLUNAS = [
   "Nome",
@@ -11,7 +12,7 @@ const COLUNAS = [
   "Faculdade",
   "Status",
   "Autoriza post",
-  "Responsável",
+  "Selos",
   "Enviado em",
 ];
 
@@ -28,15 +29,17 @@ function celulaCsv(valor: string | number | boolean) {
   return `"${String(valor).replace(/"/g, '""')}"`;
 }
 
-// Visualizacao densa, estilo planilha. Status e autorizacao sao editaveis
-// direto na linha; o resto vem do aluno e e somente leitura.
+// Visualizacao densa, estilo planilha. Só o status é editável direto na
+// linha. A autorização NÃO é: ela é a resposta do aluno, e um clique errado
+// numa grade densa exporia alguém que não autorizou. Para mudá-la, abra o
+// detalhe (clique no nome) e confirme.
 export function PlanilhaAprovacoes({
   aprovacoes,
-  responsaveis,
+  onAbrir,
   onAtualizar,
 }: {
   aprovacoes: Aprovacao[];
-  responsaveis: string[];
+  onAbrir: (email: string) => void;
   onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
 }) {
   function exportarCsv() {
@@ -48,11 +51,9 @@ export function PlanilhaAprovacoes({
           celulaCsv(a.email),
           celulaCsv(a.curso),
           celulaCsv(a.faculdade),
-          celulaCsv(
-            ETAPAS.find((e) => e.id === a.status)?.titulo ?? a.status
-          ),
+          celulaCsv(tituloEtapa(a.status)),
           celulaCsv(a.autoriza_postagem ? "Sim" : "Não"),
-          celulaCsv(a.responsavel ?? ""),
+          celulaCsv(a.selos.join("; ")),
           celulaCsv(dataHora(a.criado_em)),
         ].join(",")
       ),
@@ -75,7 +76,7 @@ export function PlanilhaAprovacoes({
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-caption text-ink-soft">
           {aprovacoes.length} depoimento{aprovacoes.length === 1 ? "" : "s"} ·
-          uma linha por envio
+          clique no nome para abrir
         </p>
         <button className="btn-ghost py-2" onClick={exportarCsv}>
           Exportar CSV
@@ -85,7 +86,7 @@ export function PlanilhaAprovacoes({
       {/* A tabela rola dentro do próprio container; a página nunca rola na
           horizontal. */}
       <div className="overflow-x-auto rounded-card border border-line bg-surface-card">
-        <table className="w-full min-w-[56rem] border-collapse">
+        <table className="w-full min-w-[58rem] border-collapse">
           <thead>
             <tr className="bg-surface-sunken">
               {COLUNAS.map((c) => (
@@ -103,12 +104,16 @@ export function PlanilhaAprovacoes({
             {aprovacoes.map((a) => (
               <tr
                 key={a.id}
-                className={`border-b border-line last:border-0 transition-colors hover:bg-surface-sunken/50 ${
-                  a.autoriza_postagem ? "" : "bg-danger-bg/30"
-                }`}
+                className="group border-b border-line transition-colors last:border-0 hover:bg-surface-sunken/60"
               >
-                <td className="text-body whitespace-nowrap px-3 py-2 font-medium">
-                  {a.nome}
+                <td className="whitespace-nowrap px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => onAbrir(a.email)}
+                    className="text-body font-medium underline-offset-2 hover:underline"
+                  >
+                    {a.nome}
+                  </button>
                 </td>
                 <td className="text-caption text-ink-soft whitespace-nowrap px-3 py-2">
                   {a.email}
@@ -121,7 +126,9 @@ export function PlanilhaAprovacoes({
                 </td>
                 <td className="px-3 py-2">
                   <select
-                    className="text-caption text-ink rounded-control border border-line bg-surface-card px-2 py-1 outline-none focus:border-brand-500"
+                    className={`text-caption rounded-pill border-0 px-2.5 py-1 font-medium outline-none focus:ring-2 focus:ring-brand-500 ${
+                      CORES_ETAPA[a.status].selo
+                    }`}
                     value={a.status}
                     onChange={(e) =>
                       onAtualizar(a.id, {
@@ -138,26 +145,17 @@ export function PlanilhaAprovacoes({
                   </select>
                 </td>
                 <td className="px-3 py-2">
-                  <Interruptor
-                    ligado={a.autoriza_postagem}
-                    onMudar={(v) => onAtualizar(a.id, { autoriza_postagem: v })}
-                    rotulo={`${a.nome} autoriza a publicação`}
-                  />
+                  {/* Só leitura de propósito — ver comentário no topo. */}
+                  <SeloAutorizacao autoriza={a.autoriza_postagem} />
                 </td>
                 <td className="px-3 py-2">
-                  <select
-                    className="text-caption text-ink rounded-control border border-line bg-surface-card px-2 py-1 outline-none focus:border-brand-500"
-                    value={a.responsavel || ""}
-                    onChange={(e) =>
-                      onAtualizar(a.id, { responsavel: e.target.value })
-                    }
-                    aria-label={`Responsável por ${a.nome}`}
-                  >
-                    <option value="">—</option>
-                    {responsaveis.map((r) => (
-                      <option key={r}>{r}</option>
-                    ))}
-                  </select>
+                  {a.selos.length > 0 ? (
+                    <span className="text-caption text-ink-soft">
+                      {a.selos.join(" · ")}
+                    </span>
+                  ) : (
+                    <span className="text-caption text-ink-muted">—</span>
+                  )}
                 </td>
                 <td className="text-caption text-ink-soft whitespace-nowrap px-3 py-2 tabular-nums">
                   {dataHora(a.criado_em)}

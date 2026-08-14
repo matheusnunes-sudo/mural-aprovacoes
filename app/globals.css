@@ -132,6 +132,10 @@
   .btn-ghost {
     @apply btn border border-line bg-surface-card text-ink hover:bg-surface-sunken;
   }
+  /* So para confirmar acao destrutiva/sensivel. */
+  .btn-perigo {
+    @apply bg-danger-fg text-white hover:opacity-90;
+  }
   .btn-quiet {
     @apply btn text-ink-soft hover:bg-surface-sunken hover:text-ink;
   }

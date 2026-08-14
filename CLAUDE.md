@@ -42,7 +42,12 @@ uma metrica no topo. Ao criar qualquer visualizacao nova, mostre esse estado.
 
 As etapas do processo vivem em `ETAPAS` (`lib/supabase.ts`) — a ordem ali e a
 ordem das colunas do Kanban e das opcoes de status. Adicionar uma etapa e
-editar esse array, nao caçar strings pelo codigo.
+editar esse array + uma entrada em `CORES_ETAPA` (`components/SeloStatus.tsx`),
+nao caçar strings pelo codigo.
+
+`selos` sao os carimbos que o designer aplica na arte ("1º lugar"). A equipe
+define no detalhe do aluno ANTES de marcar como design pronto — por isso o
+bloco fica no topo do modal, nao escondido no fim.
 
 A fila agrupa por aluno; Kanban e planilha trabalham envio a envio, porque
 status e autorizacao pertencem ao depoimento, nao a pessoa.
@@ -74,6 +79,23 @@ classico: item de grid/flex com texto truncavel precisa de `min-w-0`.
 A correcao de depoimento por IA NUNCA pode alterar o sentido, os fatos ou os
 nomes de curso/faculdade. O prompt em `app/api/corrigir/route.ts` reforca
 isso. Todo depoimento passa por revisao humana no painel antes de virar post.
+
+## Acoes sensiveis
+
+`autoriza_postagem` so muda com confirmacao (`ConfirmarDialogo`), e **nunca**
+e editavel direto na planilha: numa grade densa um clique errado exporia um
+aluno que nao autorizou. Para mudar, abra o detalhe e confirme.
+
+Mesma logica no depoimento corrigido: ele nasce travado e so vira editavel
+depois de clicar no lapis. Texto ja revisado nao deve mudar sem intencao.
+
+## Integracao com o Figma
+
+`components/ModalFigma.tsx` e um **MVP visual**: conexao, arquivo e geracao
+sao simulados com timers e nada sai do app. Serve para a equipe validar o
+fluxo antes de existir integracao real. O mapeamento campo -> layer mostrado
+ali e o contrato pretendido (nome do campo = nome da layer no template),
+igual ao plugin "Sheets to Figma".
 
 ## Proximos passos (roadmap, nao feito no MVP)
 

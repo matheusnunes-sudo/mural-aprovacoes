@@ -2,7 +2,7 @@ import type { Aprovacao, GrupoAluno } from "./supabase";
 
 // O aluno pode enviar mais de um depoimento (uma segunda aprovacao, uma
 // versao corrigida da historia). Cada envio continua sendo uma linha
-// propria — com status e responsavel proprios — mas o painel mostra os
+// propria — com status, autorizacao e selos proprios — mas o painel mostra os
 // envios do mesmo email juntos, para a equipe nao tratar como duas pessoas.
 export function agruparPorEmail(aprovacoes: Aprovacao[]): GrupoAluno[] {
   const porEmail = new Map<string, Aprovacao[]>();

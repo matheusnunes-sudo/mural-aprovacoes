@@ -1,14 +1,9 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import type { GrupoAluno, StatusAprovacao } from "@/lib/supabase";
+import type { GrupoAluno } from "@/lib/supabase";
 import { SeloAutorizacao } from "./SeloAutorizacao";
-
-const STATUS: Record<StatusAprovacao, { texto: string; classe: string }> = {
-  pendente: { texto: "Pendente", classe: "bg-warning-bg text-warning-fg" },
-  design_pronto: { texto: "Design pronto", classe: "bg-info-bg text-info-fg" },
-  postado: { texto: "Postado", classe: "bg-success-bg text-success-fg" },
-};
+import { SeloStatus } from "./SeloStatus";
 
 function iniciais(nome: string) {
   return nome
@@ -28,7 +23,6 @@ export function CardAprovacao({
 }) {
   // O envio mais recente representa o aluno na fila.
   const recente = grupo.aprovacoes[0];
-  const s = STATUS[recente.status];
   const varios = grupo.aprovacoes.length > 1;
   // Se qualquer envio do aluno não tem autorização, a fila precisa avisar.
   const algumSemAutorizacao = grupo.aprovacoes.some((a) => !a.autoriza_postagem);
@@ -61,9 +55,15 @@ export function CardAprovacao({
         <span className="text-caption text-ink-soft mt-0.5 block truncate">
           {recente.curso} · {recente.faculdade}
         </span>
-        <span className="text-caption text-ink-muted block truncate">
-          {grupo.email}
-        </span>
+        {recente.selos.length > 0 ? (
+          <span className="text-caption text-brand-600 block truncate">
+            {recente.selos.join(" · ")}
+          </span>
+        ) : (
+          <span className="text-caption text-ink-muted block truncate">
+            {grupo.email}
+          </span>
+        )}
       </span>
 
       {algumSemAutorizacao && (
@@ -72,10 +72,8 @@ export function CardAprovacao({
         </span>
       )}
 
-      <span
-        className={`badge ${s.classe} shrink-0 justify-center sm:min-w-[6rem]`}
-      >
-        {s.texto}
+      <span className="shrink-0 sm:min-w-[7rem]">
+        <SeloStatus status={recente.status} />
       </span>
     </motion.button>
   );

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ETAPAS } from "@/lib/supabase";
 import type { Aprovacao, GrupoAluno, StatusAprovacao } from "@/lib/supabase";
 import { Interruptor } from "./Interruptor";
+import { EditorSelos } from "./EditorSelos";
+import { ConfirmarDialogo } from "./ConfirmarDialogo";
 
 function dataCurta(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -15,12 +17,10 @@ function dataCurta(iso: string) {
 
 export function DetalheAluno({
   grupo,
-  responsaveis,
   onFechar,
   onAtualizar,
 }: {
   grupo: GrupoAluno;
-  responsaveis: string[];
   onFechar: () => void;
   onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
 }) {
@@ -132,7 +132,6 @@ export function DetalheAluno({
         <RevisaoDepoimento
           key={aprovacao.id}
           aprovacao={aprovacao}
-          responsaveis={responsaveis}
           onFechar={onFechar}
           onAtualizar={onAtualizar}
         />
@@ -143,31 +142,29 @@ export function DetalheAluno({
 
 function RevisaoDepoimento({
   aprovacao,
-  responsaveis,
   onFechar,
   onAtualizar,
 }: {
   aprovacao: Aprovacao;
-  responsaveis: string[];
   onFechar: () => void;
   onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
 }) {
   const [corrigido, setCorrigido] = useState(
     aprovacao.depoimento_corrigido || ""
   );
+  const [editando, setEditando] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [modo, setModo] = useState<string | null>(null);
+  const [confirmandoAutorizacao, setConfirmandoAutorizacao] = useState(false);
+  const areaRef = useRef<HTMLTextAreaElement>(null);
 
-  async function corrigir(tom?: string) {
+  async function corrigir() {
     setCarregando(true);
     try {
       const res = await fetch("/api/corrigir", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          depoimento: aprovacao.depoimento_original,
-          tom,
-        }),
+        body: JSON.stringify({ depoimento: aprovacao.depoimento_original }),
       });
       const json = await res.json();
       if (json.corrigido) {
@@ -185,86 +182,78 @@ function RevisaoDepoimento({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ao entrar em edição, o cursor já vai para o texto.
+  useEffect(() => {
+    if (editando) areaRef.current?.focus();
+  }, [editando]);
+
   function salvar() {
     onAtualizar(aprovacao.id, { depoimento_corrigido: corrigido });
     onFechar();
   }
 
+  const autorizado = aprovacao.autoriza_postagem;
+
   return (
     <>
       {/* Autorização vem primeiro: sem ela, o resto do trabalho não acontece. */}
       <div
-        className={`mb-5 flex items-center justify-between gap-4 rounded-control border p-3.5 ${
-          aprovacao.autoriza_postagem
-            ? "border-line bg-surface-sunken/60"
+        className={`mb-4 flex items-center justify-between gap-4 rounded-control border p-3.5 ${
+          autorizado
+            ? "border-line bg-surface-sunken/50"
             : "border-transparent bg-danger-bg"
         }`}
       >
         <div className="min-w-0">
-          <p
-            className={`text-label ${
-              aprovacao.autoriza_postagem ? "" : "text-danger-fg"
-            }`}
-          >
-            {aprovacao.autoriza_postagem
+          <p className={`text-label ${autorizado ? "" : "text-danger-fg"}`}>
+            {autorizado
               ? "Autoriza a publicação"
               : "Não autoriza a publicação"}
           </p>
           <p
             className={`text-caption mt-0.5 ${
-              aprovacao.autoriza_postagem ? "text-ink-soft" : "text-danger-fg/80"
+              autorizado ? "text-ink-soft" : "text-danger-fg/80"
             }`}
           >
-            {aprovacao.autoriza_postagem
+            {autorizado
               ? "Pode virar card e ir para as redes."
               : "Não produza design para este depoimento."}
           </p>
         </div>
         <Interruptor
-          ligado={aprovacao.autoriza_postagem}
-          onMudar={(v) => onAtualizar(aprovacao.id, { autoriza_postagem: v })}
+          ligado={autorizado}
+          // Nunca muda direto: é a resposta do aluno, não uma preferência
+          // da equipe. Trocar sem querer expõe alguém que não autorizou.
+          onMudar={() => setConfirmandoAutorizacao(true)}
           rotulo="Autorização de publicação"
         />
       </div>
 
-      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-label text-ink-soft mb-1.5 block">Status</span>
-          <select
-            className="field"
-            value={aprovacao.status}
-            onChange={(e) =>
-              onAtualizar(aprovacao.id, {
-                status: e.target.value as StatusAprovacao,
-              })
-            }
-          >
-            {ETAPAS.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.titulo}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="text-label text-ink-soft mb-1.5 block">
-            Responsável
-          </span>
-          <select
-            className="field"
-            value={aprovacao.responsavel || ""}
-            onChange={(e) =>
-              onAtualizar(aprovacao.id, { responsavel: e.target.value })
-            }
-          >
-            <option value="">Sem responsável</option>
-            {responsaveis.map((r) => (
-              <option key={r}>{r}</option>
-            ))}
-          </select>
-        </label>
+      <div className="mb-5">
+        <EditorSelos
+          selos={aprovacao.selos}
+          onMudar={(selos) => onAtualizar(aprovacao.id, { selos })}
+        />
       </div>
+
+      <label className="mb-5 block">
+        <span className="text-label text-ink-soft mb-1.5 block">Status</span>
+        <select
+          className="field sm:w-auto"
+          value={aprovacao.status}
+          onChange={(e) =>
+            onAtualizar(aprovacao.id, {
+              status: e.target.value as StatusAprovacao,
+            })
+          }
+        >
+          {ETAPAS.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.titulo}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <div className="mb-2.5 flex flex-wrap items-center gap-2">
         <span className="text-label">Depoimento</span>
@@ -287,31 +276,92 @@ function RevisaoDepoimento({
             {aprovacao.depoimento_original}
           </div>
         </div>
+
         <div>
-          <p className="text-caption text-ink-muted mb-1.5">
-            Corrigido (editável)
-          </p>
-          <textarea
-            className="field min-h-[8.75rem] resize-y"
-            value={carregando ? "Corrigindo..." : corrigido}
-            disabled={carregando}
-            onChange={(e) => setCorrigido(e.target.value)}
-          />
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <p className="text-caption text-ink-muted">Corrigido</p>
+            {/* Fica travado por padrão: o texto já vem revisado e uma
+                edição sem querer passaria batida. */}
+            <button
+              type="button"
+              onClick={() => setEditando((v) => !v)}
+              disabled={carregando}
+              aria-pressed={editando}
+              className={`flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-caption transition-colors disabled:opacity-40 ${
+                editando
+                  ? "bg-brand-500 text-white"
+                  : "text-ink-soft hover:bg-surface-sunken hover:text-ink"
+              }`}
+            >
+              <IconeLapis />
+              {editando ? "Editando" : "Editar"}
+            </button>
+          </div>
+
+          {editando ? (
+            <textarea
+              ref={areaRef}
+              className="field min-h-[8.75rem] resize-y"
+              value={corrigido}
+              onChange={(e) => setCorrigido(e.target.value)}
+              onBlur={() => setEditando(false)}
+            />
+          ) : (
+            <div className="text-body rounded-control border border-line bg-surface-card p-3.5 min-h-[8.75rem] whitespace-pre-wrap">
+              {carregando ? (
+                <span className="text-ink-muted">Corrigindo...</span>
+              ) : (
+                corrigido || (
+                  <span className="text-ink-muted">Sem versão corrigida.</span>
+                )
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
-        <button
-          className="btn-ghost"
-          onClick={() => corrigir("emocionante")}
-          disabled={carregando}
-        >
-          Regerar com tom emocionante
-        </button>
-        <button className="btn-primary sm:ml-auto" onClick={salvar}>
+      <div className="mt-6 flex justify-end">
+        <button className="btn-primary" onClick={salvar}>
           Salvar depoimento
         </button>
       </div>
+
+      <ConfirmarDialogo
+        aberto={confirmandoAutorizacao}
+        titulo={
+          autorizado ? "Marcar como não autorizado?" : "Marcar como autorizado?"
+        }
+        descricao={
+          autorizado
+            ? `${aprovacao.nome} deixará de aparecer para produção de design e não deve virar post.`
+            : `Confirme que ${aprovacao.nome} autorizou publicar nome, foto e depoimento. Marcar sem autorização real expõe o aluno.`
+        }
+        textoConfirmar={autorizado ? "Sim, remover" : "Sim, autorizar"}
+        perigo={!autorizado}
+        onConfirmar={() => {
+          onAtualizar(aprovacao.id, { autoriza_postagem: !autorizado });
+          setConfirmandoAutorizacao(false);
+        }}
+        onCancelar={() => setConfirmandoAutorizacao(false)}
+      />
     </>
+  );
+}
+
+function IconeLapis() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M9.6 2.1a1.4 1.4 0 0 1 2 2L5 10.7l-2.6.7.7-2.6 6.5-6.7Z" />
+    </svg>
   );
 }

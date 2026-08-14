@@ -20,8 +20,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "pendente",
-    responsavel: "Matheus",
     autoriza_postagem: true,
+    selos: ["1ª chamada"],
     criado_em: "2026-08-10T09:00:00Z",
   },
   {
@@ -36,8 +36,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "pendente",
-    responsavel: null,
     autoriza_postagem: true,
+    selos: ["Segunda aprovação"],
     criado_em: "2026-08-11T19:30:00Z",
   },
   {
@@ -53,8 +53,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "design_pronto",
-    responsavel: "Gabriel",
     autoriza_postagem: true,
+    selos: ["1º lugar", "Nota 1000 na redação"],
     criado_em: "2026-08-09T14:20:00Z",
   },
   {
@@ -70,8 +70,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "postado",
-    responsavel: "Pedro",
     autoriza_postagem: true,
+    selos: ["Bolsa integral"],
     criado_em: "2026-08-05T11:00:00Z",
   },
   {
@@ -86,8 +86,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "pendente",
-    responsavel: "Matheus",
     autoriza_postagem: false,
+    selos: [],
     criado_em: "2026-08-11T08:15:00Z",
   },
   {
@@ -103,10 +103,8 @@ export const aprovacoesMock: Aprovacao[] = [
     foto_url: null,
     comprovante_url: null,
     status: "design_pronto",
-    responsavel: "Gabriel",
     autoriza_postagem: true,
+    selos: [],
     criado_em: "2026-08-08T16:40:00Z",
   },
 ];
-
-export const responsaveis = ["Matheus", "Gabriel", "Pedro"];

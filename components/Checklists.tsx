@@ -59,7 +59,7 @@ function Coluna({ titulo, inicial }: { titulo: string; inicial: Item[] }) {
       </div>
 
       {/* Barra de progresso: status visível sem precisar contar os itens. */}
-      <div className="mb-4 h-1.5 overflow-hidden rounded-pill bg-surface-sunken">
+      <div className="mb-3 h-1.5 overflow-hidden rounded-pill bg-surface-sunken">
         <motion.div
           className="bg-brand-500 h-full rounded-pill"
           initial={false}
@@ -68,7 +68,7 @@ function Coluna({ titulo, inicial }: { titulo: string; inicial: Item[] }) {
         />
       </div>
 
-      <ul>
+      <ul className="-mx-2">
         <AnimatePresence initial={false}>
           {itens.map((i) => (
             <motion.li
@@ -78,51 +78,58 @@ function Coluna({ titulo, inicial }: { titulo: string; inicial: Item[] }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="flex items-center gap-3 border-b border-line py-2.5 last:border-0"
             >
-              <motion.button
-                onClick={() => toggle(i.id)}
-                whileTap={reduzMovimento ? undefined : { scale: 0.85 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+              {/* A linha inteira é o alvo: marcar tarefa é a ação mais
+                  repetida do dia e mirar numa caixa de 20px custa tempo. */}
+              <button
+                type="button"
                 role="checkbox"
                 aria-checked={i.feito}
-                aria-label={i.texto}
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
-                  i.feito
-                    ? "bg-brand-500 border-transparent text-white"
-                    : "border-line-strong bg-surface-card hover:border-brand-500"
-                }`}
+                onClick={() => toggle(i.id)}
+                className="flex w-full items-center gap-3 rounded-control px-2 py-2.5 text-left transition-colors hover:bg-surface-sunken"
               >
-                {i.feito && (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <path d="M2.5 6.5 5 9l4.5-5.5" />
-                  </svg>
-                )}
-              </motion.button>
+                <motion.span
+                  aria-hidden
+                  animate={reduzMovimento ? undefined : { scale: 1 }}
+                  whileTap={reduzMovimento ? undefined : { scale: 0.85 }}
+                  transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
+                    i.feito
+                      ? "bg-brand-500 border-transparent text-white"
+                      : "border-line-strong bg-surface-card"
+                  }`}
+                >
+                  {i.feito && (
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M2.5 6.5 5 9l4.5-5.5" />
+                    </svg>
+                  )}
+                </motion.span>
 
-              <span
-                className={`text-body min-w-0 flex-1 truncate transition-colors duration-200 ${
-                  i.feito ? "text-ink-muted line-through" : ""
-                }`}
-              >
-                {i.texto}
-              </span>
+                <span
+                  className={`text-body min-w-0 flex-1 truncate transition-colors duration-200 ${
+                    i.feito ? "text-ink-muted line-through" : ""
+                  }`}
+                >
+                  {i.texto}
+                </span>
+              </button>
             </motion.li>
           ))}
         </AnimatePresence>
       </ul>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-3 flex gap-2">
         <input
           className="field min-w-0"
           value={novo}

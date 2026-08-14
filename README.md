@@ -12,8 +12,10 @@ para os times de IA e TI evoluirem.
   **planilha** (com exportacao CSV)
 - Filtros por curso, faculdade, status e autorizacao de postagem
 - Envios do mesmo email aparecem agrupados como um aluno so
-- Detalhe do aluno com correcao de depoimento por IA (antes/depois editavel)
+- Detalhe do aluno com correcao de depoimento por IA (edicao destravada no lapis)
+- Selos ("1º lugar", "Bolsa integral") que o designer aplica na arte
 - Checklists de postagens e designs do dia
+- Previa da integracao com o Figma (**demonstracao visual**, nao envia nada)
 - Tema claro e escuro (segue o sistema, com botao para trocar)
 - Roda com dados de exemplo mesmo sem backend configurado
 

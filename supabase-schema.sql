@@ -12,24 +12,26 @@ create table if not exists aprovacoes (
   foto_url text,
   comprovante_url text,
   status text not null default 'pendente',
-  responsavel text,
   -- O aluno autorizou publicar? Quem nao autoriza nao entra na producao.
   autoriza_postagem boolean not null default true,
+  -- Selos que o designer aplica na arte (ex.: '1º lugar').
+  selos text[] not null default '{}',
   criado_em timestamptz not null default now()
 );
 
 -- O painel lista agrupando por email; o indice mantem isso barato.
 create index if not exists aprovacoes_email_idx on aprovacoes (email);
 
--- Se a tabela ja existia sem a coluna email (versao anterior do MVP):
+-- Migracoes a partir de versoes anteriores do MVP:
 --   alter table aprovacoes add column if not exists email text;
 --   update aprovacoes set email = '' where email is null;
 --   alter table aprovacoes alter column email set not null;
--- E sem a coluna de autorizacao:
 --   alter table aprovacoes
 --     add column if not exists autoriza_postagem boolean not null default true;
--- As colunas cidade/uf sairam do formulario na V1. Se existirem, podem
--- ficar (sao nullable) ate a definicao final das perguntas.
+--   alter table aprovacoes
+--     add column if not exists selos text[] not null default '{}';
+-- As colunas cidade/uf e responsavel sairam do produto. Se existirem, podem
+-- ficar (sao nullable) — o app simplesmente nao le nem escreve nelas.
 
 -- Permite que o formulario publico insira, mas nao leia dados de terceiros.
 alter table aprovacoes enable row level security;

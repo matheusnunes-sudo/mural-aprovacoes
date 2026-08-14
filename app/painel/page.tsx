@@ -5,13 +5,14 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { supabase, supabaseConfigurado, ETAPAS } from "@/lib/supabase";
 import type { Aprovacao } from "@/lib/supabase";
 import { agruparPorEmail } from "@/lib/agrupar";
-import { aprovacoesMock, responsaveis } from "@/lib/mock";
+import { aprovacoesMock } from "@/lib/mock";
 import { PainelHeader } from "@/components/PainelHeader";
 import { CardAprovacao } from "@/components/CardAprovacao";
 import { DetalheAluno } from "@/components/DetalheAluno";
 import { Checklists } from "@/components/Checklists";
 import { KanbanAprovacoes } from "@/components/KanbanAprovacoes";
 import { PlanilhaAprovacoes } from "@/components/PlanilhaAprovacoes";
+import { ModalFigma } from "@/components/ModalFigma";
 
 // Senha simples só para demonstração (V1). A troca por auth real do
 // Supabase está documentada no README como próximo passo.
@@ -37,6 +38,7 @@ export default function Painel() {
   // Guarda o e-mail, não o objeto: assim o detalhe sempre reflete os dados
   // atuais do aluno depois de uma edição.
   const [emailAberto, setEmailAberto] = useState<string | null>(null);
+  const [figmaAberto, setFigmaAberto] = useState(false);
   const [fCurso, setFCurso] = useState("");
   const [fFac, setFFac] = useState("");
   const [fStatus, setFStatus] = useState("");
@@ -77,7 +79,7 @@ export default function Painel() {
   );
 
   // A lista agrupa por aluno; Kanban e planilha trabalham envio a envio,
-  // porque status e autorização pertencem ao depoimento, não à pessoa.
+  // porque status, autorização e selos pertencem ao depoimento.
   const grupos = agruparPorEmail(filtrados);
   const grupoAberto = grupos.find((g) => g.email === emailAberto) || null;
 
@@ -143,26 +145,35 @@ export default function Painel() {
 
       {aba === "fila" && (
         <>
-          {/* Seletor de visualização. */}
-          <div className="mb-4 inline-flex gap-1 rounded-pill bg-surface-sunken p-1">
-            {VISOES.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => setVisao(v.id)}
-                className={`relative rounded-pill px-4 py-1.5 text-label transition-colors ${
-                  visao === v.id ? "text-ink" : "text-ink-soft hover:text-ink"
-                }`}
-              >
-                {visao === v.id && (
-                  <motion.span
-                    layoutId="visao-indicador"
-                    className="absolute inset-0 rounded-pill bg-surface-card shadow-card"
-                    transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-                  />
-                )}
-                <span className="relative">{v.titulo}</span>
-              </button>
-            ))}
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            {/* Seletor de visualização. */}
+            <div className="inline-flex gap-1 rounded-pill bg-surface-sunken p-1">
+              {VISOES.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setVisao(v.id)}
+                  className={`relative rounded-pill px-4 py-1.5 text-label transition-colors ${
+                    visao === v.id ? "text-ink" : "text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  {visao === v.id && (
+                    <motion.span
+                      layoutId="visao-indicador"
+                      className="absolute inset-0 rounded-pill bg-surface-card shadow-card"
+                      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+                    />
+                  )}
+                  <span className="relative">{v.titulo}</span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              className="btn-ghost py-2 sm:ml-auto"
+              onClick={() => setFigmaAberto(true)}
+            >
+              Enviar para o Figma
+            </button>
           </div>
 
           <div className="mb-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
@@ -238,7 +249,7 @@ export default function Painel() {
           {visao === "planilha" && (
             <PlanilhaAprovacoes
               aprovacoes={filtrados}
-              responsaveis={responsaveis}
+              onAbrir={setEmailAberto}
               onAtualizar={atualizar}
             />
           )}
@@ -252,9 +263,18 @@ export default function Painel() {
           <DetalheAluno
             key={grupoAberto.email}
             grupo={grupoAberto}
-            responsaveis={responsaveis}
             onFechar={() => setEmailAberto(null)}
             onAtualizar={atualizar}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {figmaAberto && (
+          <ModalFigma
+            key="figma"
+            aprovacoes={filtrados}
+            onFechar={() => setFigmaAberto(false)}
           />
         )}
       </AnimatePresence>

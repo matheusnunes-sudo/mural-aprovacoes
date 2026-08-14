@@ -17,10 +17,29 @@ export type StatusAprovacao = "pendente" | "design_pronto" | "postado";
 
 // Etapas do processo, na ordem em que acontecem. E a fonte da ordem das
 // colunas do Kanban e das opcoes de status em todo o painel.
-export const ETAPAS: { id: StatusAprovacao; titulo: string }[] = [
-  { id: "pendente", titulo: "Pendente" },
-  { id: "design_pronto", titulo: "Design pronto" },
-  { id: "postado", titulo: "Postado" },
+//
+// O `tom` e um semaforo: vermelho = parado, amarelo = em andamento,
+// verde = concluido. As classes ficam nos componentes porque o Tailwind
+// precisa das strings literais para gerar o CSS.
+export const ETAPAS: {
+  id: StatusAprovacao;
+  titulo: string;
+  tom: "vermelho" | "amarelo" | "verde";
+}[] = [
+  { id: "pendente", titulo: "Pendente", tom: "vermelho" },
+  { id: "design_pronto", titulo: "Design pronto", tom: "amarelo" },
+  { id: "postado", titulo: "Postado", tom: "verde" },
+];
+
+// Selos sugeridos. A equipe pode escrever qualquer outro texto — estes sao
+// so os atalhos mais usados.
+export const SELOS_SUGERIDOS = [
+  "1º lugar",
+  "1ª chamada",
+  "Nota 1000 na redação",
+  "Bolsa integral",
+  "Segunda aprovação",
+  "Ampla concorrência",
 ];
 
 export type Aprovacao = {
@@ -36,10 +55,12 @@ export type Aprovacao = {
   foto_url: string | null;
   comprovante_url: string | null;
   status: StatusAprovacao;
-  responsavel: string | null;
   // O aluno autorizou publicar o depoimento? Quem nao autoriza NAO deve
   // entrar na producao de design — e o filtro mais importante do painel.
   autoriza_postagem: boolean;
+  // Selos que o designer deve aplicar na arte (ex.: "1º lugar"). Definidos
+  // pela equipe antes de mandar para o design.
+  selos: string[];
   criado_em: string;
 };
 

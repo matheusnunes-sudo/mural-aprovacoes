@@ -60,6 +60,28 @@ Estados: `warning`, `success`, `info`, `danger` (cada um com `.bg` e `.fg`).
 - `.badge` - pilula de status.
 - `.scrim` - fundo escuro + blur atras de modal.
 
+## Semaforo do processo
+
+As etapas tem uma cor fixa, definida em `CORES_ETAPA`
+(`components/SeloStatus.tsx`): **Pendente = vermelho**, **Design pronto =
+amarelo**, **Postado = verde**. A mesma cor pinta o selo de status, o fundo
+da coluna do Kanban e a pilula da planilha — quem aprende num lugar le em
+todos. Nunca invente outra cor de status fora desse mapa.
+
+O selo de autorizacao tambem usa vermelho, entao ele leva **icone** (olho
+cortado): cor sozinha nao distinguiria "pendente" de "nao autoriza".
+
+## Usabilidade (referencia: ClickUp)
+
+- **Alvo de clique generoso.** Acao repetida o dia inteiro nao pode exigir
+  mira: no checklist a linha inteira marca a tarefa, nao so a caixinha.
+- **Mostre a excecao, nao a regra.** No Kanban so aparece o selo de quem
+  **nao** autoriza; carimbar "autoriza" em quase todo card vira ruido.
+- **Editar onde e seguro.** A planilha edita status inline (barato de
+  desfazer) e trata autorizacao como so leitura (caro de errar).
+- **Estado sempre visivel**: contador por coluna, barra de progresso no
+  checklist, metrica de "sem autorizacao" no topo.
+
 ## Regras
 
 1. Nunca hardcode cor ou espacamento. Use tokens.
@@ -102,6 +124,11 @@ Usamos `framer-motion` para o que e tocado ou arrastado; CSS puro
    teclado e e fragil no toque. O Kanban move card por botoes `‹ ›`; o
    arrasto e um extra. Toda interacao por gesto precisa de um equivalente
    clicavel.
+8. **`AnimatePresence` exige `key` no filho direto** — e, para dialogo
+   aninhado dentro de outro modal, nao use `AnimatePresence`: use
+   `if (!aberto) return null`. Ja aconteceu de o no ficar montado e
+   invisivel por cima da tela, engolindo todos os cliques
+   (ver `ConfirmarDialogo`).
 6. **Foco visivel.** `:focus-visible` tem anel proprio na cor da marca. Nunca
    remover sem repor: e a unica pista de posicao para quem navega por teclado.
 
