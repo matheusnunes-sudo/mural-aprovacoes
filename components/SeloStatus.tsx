@@ -1,5 +1,5 @@
 import { ETAPAS } from "@/lib/supabase";
-import type { StatusAprovacao } from "@/lib/supabase";
+import type { StatusRegistro } from "@/lib/supabase";
 
 // Semaforo unico do processo: vermelho parado, amarelo em andamento, verde
 // concluido. As mesmas cores pintam o selo, a coluna do Kanban e a linha da
@@ -8,7 +8,7 @@ import type { StatusAprovacao } from "@/lib/supabase";
 // As classes precisam ser strings literais para o Tailwind gerar o CSS,
 // por isso o mapa explicito em vez de montar o nome da classe na mao.
 export const CORES_ETAPA: Record<
-  StatusAprovacao,
+  StatusRegistro,
   { selo: string; coluna: string; cabecalho: string; ponto: string }
 > = {
   pendente: {
@@ -31,11 +31,11 @@ export const CORES_ETAPA: Record<
   },
 };
 
-export function tituloEtapa(status: StatusAprovacao) {
+export function tituloEtapa(status: StatusRegistro) {
   return ETAPAS.find((e) => e.id === status)?.titulo ?? status;
 }
 
-export function SeloStatus({ status }: { status: StatusAprovacao }) {
+export function SeloStatus({ status }: { status: StatusRegistro }) {
   return (
     <span
       className={`badge gap-1.5 ${CORES_ETAPA[status].selo} justify-center`}

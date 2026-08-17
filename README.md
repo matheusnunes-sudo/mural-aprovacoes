@@ -8,9 +8,12 @@ para os times de IA e TI evoluirem.
 
 - Formulario publico do aluno (`/`), com email validado e autorizacao de post
 - Painel da equipe (`/painel`) com senha simples de demonstracao
-- Tres visualizacoes das aprovacoes: **lista**, **Kanban** por etapa e
-  **planilha** (com exportacao CSV)
-- Filtros por curso, faculdade, status e autorizacao de postagem
+- **Duas campanhas separadas em abas**: acertos do ENEM (semana da prova) e
+  aprovacoes (depois do SISU) — cada uma com seus proprios campos
+- Tres visualizacoes: **lista**, **Kanban** por etapa e **planilha**
+  (com exportacao CSV)
+- Filtros por curso, faculdade, status e autorizacao de postagem; na semana
+  do ENEM, ordem por maior numero de acertos
 - Envios do mesmo email aparecem agrupados como um aluno so
 - Detalhe do aluno com correcao de depoimento por IA (edicao destravada no lapis)
 - Selos ("1º lugar", "Bolsa integral") que o designer aplica na arte

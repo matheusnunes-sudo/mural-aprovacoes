@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { GrupoAluno } from "@/lib/supabase";
+import { legendaRegistro, legendaMaterias } from "@/lib/formato";
 import { SeloAutorizacao } from "./SeloAutorizacao";
 import { SeloStatus } from "./SeloStatus";
 
@@ -14,7 +15,7 @@ function iniciais(nome: string) {
     .toUpperCase();
 }
 
-export function CardAprovacao({
+export function CardRegistro({
   grupo,
   onClick,
 }: {
@@ -22,10 +23,11 @@ export function CardAprovacao({
   onClick: () => void;
 }) {
   // O envio mais recente representa o aluno na fila.
-  const recente = grupo.aprovacoes[0];
-  const varios = grupo.aprovacoes.length > 1;
+  const recente = grupo.registros[0];
+  const varios = grupo.registros.length > 1;
   // Se qualquer envio do aluno não tem autorização, a fila precisa avisar.
-  const algumSemAutorizacao = grupo.aprovacoes.some((a) => !a.autoriza_postagem);
+  const algumSemAutorizacao = grupo.registros.some((r) => !r.autoriza_postagem);
+  const materias = legendaMaterias(recente);
   const reduzMovimento = useReducedMotion();
 
   // min-w-0 no card: sem isso o item de grid não encolhe abaixo do próprio
@@ -47,13 +49,13 @@ export function CardAprovacao({
           <span className="text-body truncate font-semibold">{grupo.nome}</span>
           {varios && (
             <span className="badge shrink-0 bg-surface-sunken text-ink-soft">
-              {grupo.aprovacoes.length}
-              <span className="ml-1 hidden sm:inline">depoimentos</span>
+              {grupo.registros.length}
+              <span className="ml-1 hidden sm:inline">envios</span>
             </span>
           )}
         </span>
         <span className="text-caption text-ink-soft mt-0.5 block truncate">
-          {recente.curso} · {recente.faculdade}
+          {legendaRegistro(recente)}
         </span>
         {recente.selos.length > 0 ? (
           <span className="text-caption text-brand-600 block truncate">
@@ -61,7 +63,7 @@ export function CardAprovacao({
           </span>
         ) : (
           <span className="text-caption text-ink-muted block truncate">
-            {grupo.email}
+            {materias || grupo.email}
           </span>
         )}
       </span>

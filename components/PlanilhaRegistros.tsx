@@ -1,20 +1,9 @@
 "use client";
 
-import { ETAPAS } from "@/lib/supabase";
-import type { Aprovacao, StatusAprovacao } from "@/lib/supabase";
+import { ETAPAS, MATERIAS, totalAcertos } from "@/lib/supabase";
+import type { Registro, StatusRegistro, TipoRegistro } from "@/lib/supabase";
 import { SeloAutorizacao } from "./SeloAutorizacao";
 import { CORES_ETAPA, tituloEtapa } from "./SeloStatus";
-
-const COLUNAS = [
-  "Nome",
-  "E-mail",
-  "Curso",
-  "Faculdade",
-  "Status",
-  "Autoriza post",
-  "Selos",
-  "Enviado em",
-];
 
 function dataHora(iso: string) {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -29,32 +18,56 @@ function celulaCsv(valor: string | number | boolean) {
   return `"${String(valor).replace(/"/g, '""')}"`;
 }
 
+// As colunas do meio mudam com o tipo: aprovação mostra curso/faculdade,
+// acerto mostra o placar da prova.
+function colunas(tipo: TipoRegistro): string[] {
+  const meio =
+    tipo === "aprovacao"
+      ? ["Curso", "Faculdade"]
+      : ["Dia 1", "Dia 2", "Total", ...MATERIAS.map((m) => m.curto)];
+  return ["Nome", "E-mail", ...meio, "Status", "Autoriza post", "Selos", "Enviado em"];
+}
+
+function celulasMeio(r: Registro): (string | number)[] {
+  if (r.tipo === "aprovacao") return [r.curso, r.faculdade];
+  const t = totalAcertos(r.acertos);
+  return [
+    r.acertos?.dia1 ?? "",
+    r.acertos?.dia2 ?? "",
+    t ?? "",
+    ...MATERIAS.map((m) => r.acertos?.materias[m.id] ?? ""),
+  ];
+}
+
 // Visualizacao densa, estilo planilha. Só o status é editável direto na
 // linha. A autorização NÃO é: ela é a resposta do aluno, e um clique errado
 // numa grade densa exporia alguém que não autorizou. Para mudá-la, abra o
 // detalhe (clique no nome) e confirme.
-export function PlanilhaAprovacoes({
-  aprovacoes,
+export function PlanilhaRegistros({
+  registros,
+  tipo,
   onAbrir,
   onAtualizar,
 }: {
-  aprovacoes: Aprovacao[];
+  registros: Registro[];
+  tipo: TipoRegistro;
   onAbrir: (email: string) => void;
-  onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
+  onAtualizar: (id: string, patch: Partial<Registro>) => void;
 }) {
+  const cabecalhos = colunas(tipo);
+
   function exportarCsv() {
     const linhas = [
-      COLUNAS.map(celulaCsv).join(","),
-      ...aprovacoes.map((a) =>
+      cabecalhos.map(celulaCsv).join(","),
+      ...registros.map((r) =>
         [
-          celulaCsv(a.nome),
-          celulaCsv(a.email),
-          celulaCsv(a.curso),
-          celulaCsv(a.faculdade),
-          celulaCsv(tituloEtapa(a.status)),
-          celulaCsv(a.autoriza_postagem ? "Sim" : "Não"),
-          celulaCsv(a.selos.join("; ")),
-          celulaCsv(dataHora(a.criado_em)),
+          celulaCsv(r.nome),
+          celulaCsv(r.email),
+          ...celulasMeio(r).map(celulaCsv),
+          celulaCsv(tituloEtapa(r.status)),
+          celulaCsv(r.autoriza_postagem ? "Sim" : "Não"),
+          celulaCsv(r.selos.join("; ")),
+          celulaCsv(dataHora(r.criado_em)),
         ].join(",")
       ),
     ].join("\n");
@@ -66,7 +79,7 @@ export function PlanilhaAprovacoes({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `aprovacoes-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `${tipo}s-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -75,7 +88,7 @@ export function PlanilhaAprovacoes({
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <p className="text-caption text-ink-soft">
-          {aprovacoes.length} depoimento{aprovacoes.length === 1 ? "" : "s"} ·
+          {registros.length} registro{registros.length === 1 ? "" : "s"} ·
           clique no nome para abrir
         </p>
         <button className="btn-ghost py-2" onClick={exportarCsv}>
@@ -89,7 +102,7 @@ export function PlanilhaAprovacoes({
         <table className="w-full min-w-[58rem] border-collapse">
           <thead>
             <tr className="bg-surface-sunken">
-              {COLUNAS.map((c) => (
+              {cabecalhos.map((c) => (
                 <th
                   key={c}
                   scope="col"
@@ -101,41 +114,59 @@ export function PlanilhaAprovacoes({
             </tr>
           </thead>
           <tbody>
-            {aprovacoes.map((a) => (
+            {registros.map((r) => (
               <tr
-                key={a.id}
-                className="group border-b border-line transition-colors last:border-0 hover:bg-surface-sunken/60"
+                key={r.id}
+                className="border-b border-line transition-colors last:border-0 hover:bg-surface-sunken/60"
               >
                 <td className="whitespace-nowrap px-3 py-2">
                   <button
                     type="button"
-                    onClick={() => onAbrir(a.email)}
+                    onClick={() => onAbrir(r.email)}
                     className="text-body font-medium underline-offset-2 hover:underline"
                   >
-                    {a.nome}
+                    {r.nome}
                   </button>
                 </td>
                 <td className="text-caption text-ink-soft whitespace-nowrap px-3 py-2">
-                  {a.email}
+                  {r.email}
                 </td>
-                <td className="text-body whitespace-nowrap px-3 py-2">
-                  {a.curso}
-                </td>
-                <td className="text-body whitespace-nowrap px-3 py-2">
-                  {a.faculdade}
-                </td>
+
+                {r.tipo === "aprovacao" ? (
+                  <>
+                    <td className="text-body whitespace-nowrap px-3 py-2">
+                      {r.curso}
+                    </td>
+                    <td className="text-body whitespace-nowrap px-3 py-2">
+                      {r.faculdade}
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <CelulaNumero valor={r.acertos?.dia1 ?? null} />
+                    <CelulaNumero valor={r.acertos?.dia2 ?? null} />
+                    <CelulaNumero valor={totalAcertos(r.acertos)} forte />
+                    {MATERIAS.map((m) => (
+                      <CelulaNumero
+                        key={m.id}
+                        valor={r.acertos?.materias[m.id] ?? null}
+                      />
+                    ))}
+                  </>
+                )}
+
                 <td className="px-3 py-2">
                   <select
                     className={`text-caption rounded-pill border-0 px-2.5 py-1 font-medium outline-none focus:ring-2 focus:ring-brand-500 ${
-                      CORES_ETAPA[a.status].selo
+                      CORES_ETAPA[r.status].selo
                     }`}
-                    value={a.status}
+                    value={r.status}
                     onChange={(e) =>
-                      onAtualizar(a.id, {
-                        status: e.target.value as StatusAprovacao,
+                      onAtualizar(r.id, {
+                        status: e.target.value as StatusRegistro,
                       })
                     }
-                    aria-label={`Status de ${a.nome}`}
+                    aria-label={`Status de ${r.nome}`}
                   >
                     {ETAPAS.map((e) => (
                       <option key={e.id} value={e.id}>
@@ -146,31 +177,43 @@ export function PlanilhaAprovacoes({
                 </td>
                 <td className="px-3 py-2">
                   {/* Só leitura de propósito — ver comentário no topo. */}
-                  <SeloAutorizacao autoriza={a.autoriza_postagem} />
+                  <SeloAutorizacao autoriza={r.autoriza_postagem} />
                 </td>
                 <td className="px-3 py-2">
-                  {a.selos.length > 0 ? (
+                  {r.selos.length > 0 ? (
                     <span className="text-caption text-ink-soft">
-                      {a.selos.join(" · ")}
+                      {r.selos.join(" · ")}
                     </span>
                   ) : (
                     <span className="text-caption text-ink-muted">—</span>
                   )}
                 </td>
                 <td className="text-caption text-ink-soft whitespace-nowrap px-3 py-2 tabular-nums">
-                  {dataHora(a.criado_em)}
+                  {dataHora(r.criado_em)}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {aprovacoes.length === 0 && (
+        {registros.length === 0 && (
           <p className="text-body text-ink-muted py-10 text-center">
-            Nenhuma aprovação com esses filtros.
+            Nenhum registro com esses filtros.
           </p>
         )}
       </div>
     </div>
+  );
+}
+
+function CelulaNumero({ valor, forte }: { valor: number | null; forte?: boolean }) {
+  return (
+    <td
+      className={`whitespace-nowrap px-3 py-2 tabular-nums ${
+        forte ? "text-body font-semibold" : "text-body"
+      }`}
+    >
+      {valor ?? <span className="text-ink-muted">—</span>}
+    </td>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import type { Aprovacao } from "@/lib/supabase";
+import { TIPOS } from "@/lib/supabase";
+import type { Registro, TipoRegistro } from "@/lib/supabase";
 
 // MVP VISUAL da integração com o Figma. Nada é enviado para lugar nenhum:
 // a conexão, o arquivo e a geração são simulados com timers, só para a
@@ -14,34 +15,66 @@ import type { Aprovacao } from "@/lib/supabase";
 
 type Estado = "desconectado" | "conectando" | "conectado" | "gerando" | "pronto";
 
-const MAPEAMENTO = [
-  { campo: "nome", layer: "#nome", exemplo: "Júlia Santos" },
-  { campo: "curso", layer: "#curso", exemplo: "Medicina" },
-  { campo: "faculdade", layer: "#faculdade", exemplo: "UFBA" },
-  { campo: "depoimento_corrigido", layer: "#depoimento", exemplo: "O Assaad mudou minha vida…" },
-  { campo: "selos[]", layer: "#selo-1, #selo-2", exemplo: "1º lugar" },
-  { campo: "foto_url", layer: "#foto", exemplo: "(imagem do aluno)" },
-];
+// O template do Figma é outro em cada momento do ano: o card de acertos
+// mostra o placar da prova; o de aprovação, o curso e a faculdade.
+const MAPEAMENTO: Record<
+  TipoRegistro,
+  { arquivo: string; campos: { campo: string; layer: string; exemplo: string }[] }
+> = {
+  acerto: {
+    arquivo: "Acertos ENEM 2026",
+    campos: [
+      { campo: "nome", layer: "#nome", exemplo: "Júlia Santos" },
+      { campo: "acertos.dia1", layer: "#acertos-dia1", exemplo: "82" },
+      { campo: "acertos.dia2", layer: "#acertos-dia2", exemplo: "79" },
+      { campo: "(dia1 + dia2)", layer: "#acertos-total", exemplo: "161" },
+      { campo: "acertos.materias", layer: "#mat-linguagens, #mat-matematica…", exemplo: "40, 42" },
+      { campo: "selos[]", layer: "#selo-1, #selo-2", exemplo: "1º lugar" },
+      { campo: "foto_url", layer: "#foto", exemplo: "(imagem do aluno)" },
+    ],
+  },
+  aprovacao: {
+    arquivo: "Mural Assaad 2026",
+    campos: [
+      { campo: "nome", layer: "#nome", exemplo: "Júlia Santos" },
+      { campo: "curso", layer: "#curso", exemplo: "Medicina" },
+      { campo: "faculdade", layer: "#faculdade", exemplo: "UFBA" },
+      { campo: "depoimento_corrigido", layer: "#depoimento", exemplo: "O Assaad mudou minha vida…" },
+      { campo: "selos[]", layer: "#selo-1, #selo-2", exemplo: "1º lugar" },
+      { campo: "foto_url", layer: "#foto", exemplo: "(imagem do aluno)" },
+    ],
+  },
+};
 
 export function ModalFigma({
-  aprovacoes,
+  registros,
+  tipo,
   onFechar,
 }: {
-  aprovacoes: Aprovacao[];
+  registros: Registro[];
+  tipo: TipoRegistro;
   onFechar: () => void;
 }) {
   const [estado, setEstado] = useState<Estado>("desconectado");
   const reduzMovimento = useReducedMotion();
+  const mapa = MAPEAMENTO[tipo];
+  const rotuloTipo = TIPOS.find((t) => t.id === tipo)!;
 
-  // Só entra na arte quem autorizou e já tem texto revisado.
-  const elegiveis = aprovacoes.filter(
-    (a) => a.autoriza_postagem && a.depoimento_corrigido
-  );
-  const bloqueadosSemAutorizacao = aprovacoes.filter(
-    (a) => !a.autoriza_postagem
+  // Só entra na arte quem autorizou. Um acerto vira card com o placar; uma
+  // aprovação precisa também do depoimento revisado.
+  const pronto = (r: Registro) =>
+    r.autoriza_postagem &&
+    (r.tipo === "acerto"
+      ? r.acertos != null &&
+        (r.acertos.dia1 != null || r.acertos.dia2 != null)
+      : Boolean(r.depoimento_corrigido));
+
+  const elegiveis = registros.filter(pronto);
+  const bloqueadosSemAutorizacao = registros.filter(
+    (r) => !r.autoriza_postagem
   ).length;
-  const bloqueadosSemTexto = aprovacoes.filter(
-    (a) => a.autoriza_postagem && !a.depoimento_corrigido
+  const bloqueadosIncompletos = registros.filter(
+    (r) => r.autoriza_postagem && !pronto(r)
   ).length;
 
   useEffect(() => {
@@ -90,7 +123,8 @@ export function ModalFigma({
               </span>
             </div>
             <p className="text-caption text-ink-soft mt-1">
-              Prévia de como a integração vai funcionar. Nada é enviado ainda.
+              {rotuloTipo.titulo} · prévia de como a integração vai funcionar.
+              Nada é enviado ainda.
             </p>
           </div>
           <button
@@ -115,9 +149,7 @@ export function ModalFigma({
                 {estado !== "desconectado" && estado !== "conectando" && (
                   <>
                     Conectado · arquivo{" "}
-                    <span className="text-ink font-medium">
-                      Mural Assaad 2026
-                    </span>
+                    <span className="text-ink font-medium">{mapa.arquivo}</span>
                   </>
                 )}
               </p>
@@ -144,7 +176,8 @@ export function ModalFigma({
           <p className="text-title mt-2 tabular-nums">
             {elegiveis.length}{" "}
             <span className="text-body text-ink-soft font-normal">
-              {elegiveis.length === 1 ? "card" : "cards"} prontos para gerar
+              {elegiveis.length === 1 ? "card pronto" : "cards prontos"} para
+              gerar
             </span>
           </p>
 
@@ -158,14 +191,17 @@ export function ModalFigma({
                 </span>
               </li>
             )}
-            {bloqueadosSemTexto > 0 && (
+            {bloqueadosIncompletos > 0 && (
               <li className="flex items-start gap-2">
                 <span className="bg-warning-fg mt-1.5 h-1.5 w-1.5 shrink-0 rounded-pill" aria-hidden />
-                {bloqueadosSemTexto} sem depoimento revisado
+                {bloqueadosIncompletos}{" "}
+                {tipo === "acerto"
+                  ? "sem acertos informados"
+                  : "sem depoimento revisado"}
               </li>
             )}
-            {bloqueadosSemAutorizacao === 0 && bloqueadosSemTexto === 0 && (
-              <li>Todos os depoimentos filtrados estão prontos.</li>
+            {bloqueadosSemAutorizacao === 0 && bloqueadosIncompletos === 0 && (
+              <li>Todos os registros filtrados estão prontos.</li>
             )}
           </ul>
         </section>
@@ -193,7 +229,7 @@ export function ModalFigma({
                 </tr>
               </thead>
               <tbody>
-                {MAPEAMENTO.map((m) => (
+                {mapa.campos.map((m) => (
                   <tr key={m.campo} className="border-b border-line last:border-0">
                     <td className="text-caption px-2 py-1.5 font-mono">
                       {m.campo}

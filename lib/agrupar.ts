@@ -1,17 +1,19 @@
-import type { Aprovacao, GrupoAluno } from "./supabase";
+import type { Registro, GrupoAluno } from "./supabase";
 
-// O aluno pode enviar mais de um depoimento (uma segunda aprovacao, uma
-// versao corrigida da historia). Cada envio continua sendo uma linha
+// O aluno pode enviar mais de um registro do mesmo tipo (uma segunda
+// aprovacao, uma correcao dos acertos). Cada envio continua sendo uma linha
 // propria — com status, autorizacao e selos proprios — mas o painel mostra os
 // envios do mesmo email juntos, para a equipe nao tratar como duas pessoas.
-export function agruparPorEmail(aprovacoes: Aprovacao[]): GrupoAluno[] {
-  const porEmail = new Map<string, Aprovacao[]>();
+//
+// Agrupe SEMPRE depois de filtrar por tipo: acerto e aprovacao do mesmo aluno
+// sao trabalhos diferentes e nao devem cair no mesmo card.
+export function agruparPorEmail(registros: Registro[]): GrupoAluno[] {
+  const porEmail = new Map<string, Registro[]>();
 
-  for (const a of aprovacoes) {
-    const chave = a.email;
-    const atual = porEmail.get(chave);
-    if (atual) atual.push(a);
-    else porEmail.set(chave, [a]);
+  for (const r of registros) {
+    const atual = porEmail.get(r.email);
+    if (atual) atual.push(r);
+    else porEmail.set(r.email, [r]);
   }
 
   const grupos: GrupoAluno[] = [];
@@ -23,14 +25,15 @@ export function agruparPorEmail(aprovacoes: Aprovacao[]): GrupoAluno[] {
       email,
       // O nome do envio mais recente ganha: e como o aluno se apresenta hoje.
       nome: ordenada[0].nome,
-      aprovacoes: ordenada,
+      registros: ordenada,
     });
   }
 
-  // Grupos ordenados pelo envio mais recente de cada aluno.
-  return grupos.sort(
-    (a, b) =>
-      +new Date(b.aprovacoes[0].criado_em) -
-      +new Date(a.aprovacoes[0].criado_em)
-  );
+  // A ordem dos GRUPOS segue a ordem em que os alunos aparecem na entrada
+  // (o Map preserva a ordem de insercao). Quem chama ja ordenou a lista do
+  // jeito que quer — por acertos na semana do ENEM, por data nas aprovacoes —
+  // e reordenar aqui jogaria esse trabalho fora.
+  //
+  // A ordem DENTRO do grupo e sempre o envio mais recente primeiro.
+  return grupos;
 }

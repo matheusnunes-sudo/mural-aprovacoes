@@ -2,23 +2,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { supabase, supabaseConfigurado, ETAPAS } from "@/lib/supabase";
-import type { Aprovacao } from "@/lib/supabase";
+import { supabase, supabaseConfigurado, ETAPAS, TIPOS } from "@/lib/supabase";
+import type { Registro, TipoRegistro } from "@/lib/supabase";
 import { agruparPorEmail } from "@/lib/agrupar";
-import { aprovacoesMock } from "@/lib/mock";
+import { ordenarPorAcertos, ordenarPorRecentes } from "@/lib/formato";
+import { registrosMock } from "@/lib/mock";
 import { PainelHeader } from "@/components/PainelHeader";
-import { CardAprovacao } from "@/components/CardAprovacao";
+import type { AbaPainel } from "@/components/PainelHeader";
+import { CardRegistro } from "@/components/CardRegistro";
 import { DetalheAluno } from "@/components/DetalheAluno";
 import { Checklists } from "@/components/Checklists";
-import { KanbanAprovacoes } from "@/components/KanbanAprovacoes";
-import { PlanilhaAprovacoes } from "@/components/PlanilhaAprovacoes";
+import { KanbanRegistros } from "@/components/KanbanRegistros";
+import { PlanilhaRegistros } from "@/components/PlanilhaRegistros";
 import { ModalFigma } from "@/components/ModalFigma";
 
 // Senha simples só para demonstração (V1). A troca por auth real do
 // Supabase está documentada no README como próximo passo.
 const SENHA_DEMO = process.env.NEXT_PUBLIC_SENHA_PAINEL || "assaad2026";
 
-type Aba = "fila" | "checklists";
 type Visao = "lista" | "kanban" | "planilha";
 
 const VISOES: { id: Visao; titulo: string }[] = [
@@ -32,9 +33,11 @@ export default function Painel() {
   const [senha, setSenha] = useState("");
   const [erroSenha, setErroSenha] = useState(false);
 
-  const [aba, setAba] = useState<Aba>("fila");
+  // A aba diz o momento do ano (acertos do ENEM ou aprovações do SISU) —
+  // são trabalhos diferentes e nunca se misturam na mesma tela.
+  const [aba, setAba] = useState<AbaPainel>("aprovacao");
   const [visao, setVisao] = useState<Visao>("lista");
-  const [dados, setDados] = useState<Aprovacao[]>([]);
+  const [dados, setDados] = useState<Registro[]>([]);
   // Guarda o e-mail, não o objeto: assim o detalhe sempre reflete os dados
   // atuais do aluno depois de uma edição.
   const [emailAberto, setEmailAberto] = useState<string | null>(null);
@@ -43,6 +46,7 @@ export default function Painel() {
   const [fFac, setFFac] = useState("");
   const [fStatus, setFStatus] = useState("");
   const [fAutoriza, setFAutoriza] = useState("");
+  const [ordem, setOrdem] = useState<"acertos" | "recentes">("acertos");
   const reduzMovimento = useReducedMotion();
 
   useEffect(() => {
@@ -52,42 +56,65 @@ export default function Painel() {
           .from("aprovacoes")
           .select("*")
           .order("criado_em", { ascending: false });
-        setDados((data as Aprovacao[]) || []);
+        setDados((data as Registro[]) || []);
       } else {
-        setDados(aprovacoesMock);
+        setDados(registrosMock);
       }
     }
     if (autorizado) carregar();
   }, [autorizado]);
 
-  const cursos = useMemo(
-    () => Array.from(new Set(dados.map((d) => d.curso))),
-    [dados]
-  );
-  const faculdades = useMemo(
-    () => Array.from(new Set(dados.map((d) => d.faculdade))),
-    [dados]
+  const tipo: TipoRegistro = aba === "acerto" ? "acerto" : "aprovacao";
+  const doTipo = useMemo(
+    () => dados.filter((d) => d.tipo === tipo),
+    [dados, tipo]
   );
 
-  const filtrados = dados.filter(
+  const cursos = useMemo(
+    () => Array.from(new Set(doTipo.map((d) => d.curso).filter(Boolean))),
+    [doTipo]
+  );
+  const faculdades = useMemo(
+    () => Array.from(new Set(doTipo.map((d) => d.faculdade).filter(Boolean))),
+    [doTipo]
+  );
+
+  const filtrados = doTipo.filter(
     (d) =>
-      (!fCurso || d.curso === fCurso) &&
-      (!fFac || d.faculdade === fFac) &&
+      (tipo !== "aprovacao" || !fCurso || d.curso === fCurso) &&
+      (tipo !== "aprovacao" || !fFac || d.faculdade === fFac) &&
       (!fStatus || d.status === fStatus) &&
       (!fAutoriza ||
         (fAutoriza === "sim" ? d.autoriza_postagem : !d.autoriza_postagem))
   );
 
+  // Na semana do ENEM a equipe posta os melhores primeiro, então a ordem
+  // padrão é por acertos. Nas aprovações, o mais recente é o que interessa.
+  // A ordem é sempre explícita aqui — `agruparPorEmail` só preserva a que
+  // receber.
+  const ordenados =
+    tipo === "acerto" && ordem === "acertos"
+      ? ordenarPorAcertos(filtrados)
+      : ordenarPorRecentes(filtrados);
+
   // A lista agrupa por aluno; Kanban e planilha trabalham envio a envio,
-  // porque status, autorização e selos pertencem ao depoimento.
-  const grupos = agruparPorEmail(filtrados);
+  // porque status, autorização e selos pertencem ao registro.
+  const grupos = agruparPorEmail(ordenados);
   const grupoAberto = grupos.find((g) => g.email === emailAberto) || null;
 
-  function atualizar(id: string, patch: Partial<Aprovacao>) {
+  function atualizar(id: string, patch: Partial<Registro>) {
     setDados((ds) => ds.map((d) => (d.id === id ? { ...d, ...patch } : d)));
     if (supabaseConfigurado && supabase) {
       supabase.from("aprovacoes").update(patch).eq("id", id);
     }
+  }
+
+  function trocarAba(nova: AbaPainel) {
+    setAba(nova);
+    // Filtros de um momento não fazem sentido no outro.
+    setFCurso("");
+    setFFac("");
+    setEmailAberto(null);
   }
 
   function entrar() {
@@ -133,18 +160,24 @@ export default function Painel() {
     );
   }
 
+  const rotuloTipo = TIPOS.find((t) => t.id === tipo)!;
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <PainelHeader
         aba={aba}
-        onAba={setAba}
-        alunos={agruparPorEmail(dados).length}
-        pendentes={dados.filter((d) => d.status === "pendente").length}
-        semAutorizacao={dados.filter((d) => !d.autoriza_postagem).length}
+        onAba={trocarAba}
+        alunos={agruparPorEmail(doTipo).length}
+        pendentes={doTipo.filter((d) => d.status === "pendente").length}
+        semAutorizacao={doTipo.filter((d) => !d.autoriza_postagem).length}
       />
 
-      {aba === "fila" && (
+      {aba !== "checklists" && (
         <>
+          <p className="text-caption text-ink-muted mb-4">
+            {rotuloTipo.descricao}
+          </p>
+
           <div className="mb-4 flex flex-wrap items-center gap-3">
             {/* Seletor de visualização. */}
             <div className="inline-flex gap-1 rounded-pill bg-surface-sunken p-1">
@@ -178,28 +211,46 @@ export default function Painel() {
 
           <div className="mb-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <span className="text-label text-ink-soft sm:mr-1">Filtros</span>
-            <select
-              className="field sm:w-auto"
-              value={fCurso}
-              onChange={(e) => setFCurso(e.target.value)}
-              aria-label="Filtrar por curso"
-            >
-              <option value="">Todos os cursos</option>
-              {cursos.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-            <select
-              className="field sm:w-auto"
-              value={fFac}
-              onChange={(e) => setFFac(e.target.value)}
-              aria-label="Filtrar por faculdade"
-            >
-              <option value="">Toda faculdade</option>
-              {faculdades.map((f) => (
-                <option key={f}>{f}</option>
-              ))}
-            </select>
+
+            {tipo === "aprovacao" ? (
+              <>
+                <select
+                  className="field sm:w-auto"
+                  value={fCurso}
+                  onChange={(e) => setFCurso(e.target.value)}
+                  aria-label="Filtrar por curso"
+                >
+                  <option value="">Todos os cursos</option>
+                  {cursos.map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+                <select
+                  className="field sm:w-auto"
+                  value={fFac}
+                  onChange={(e) => setFFac(e.target.value)}
+                  aria-label="Filtrar por faculdade"
+                >
+                  <option value="">Toda faculdade</option>
+                  {faculdades.map((f) => (
+                    <option key={f}>{f}</option>
+                  ))}
+                </select>
+              </>
+            ) : (
+              <select
+                className="field sm:w-auto"
+                value={ordem}
+                onChange={(e) =>
+                  setOrdem(e.target.value as "acertos" | "recentes")
+                }
+                aria-label="Ordenar registros"
+              >
+                <option value="acertos">Mais acertos primeiro</option>
+                <option value="recentes">Mais recentes primeiro</option>
+              </select>
+            )}
+
             <select
               className="field sm:w-auto"
               value={fStatus}
@@ -228,7 +279,7 @@ export default function Painel() {
           {visao === "lista" && (
             <div className="grid gap-3">
               {grupos.map((g) => (
-                <CardAprovacao
+                <CardRegistro
                   key={g.email}
                   grupo={g}
                   onClick={() => setEmailAberto(g.email)}
@@ -239,16 +290,17 @@ export default function Painel() {
           )}
 
           {visao === "kanban" && (
-            <KanbanAprovacoes
-              aprovacoes={filtrados}
+            <KanbanRegistros
+              registros={ordenados}
               onAbrir={setEmailAberto}
               onAtualizar={atualizar}
             />
           )}
 
           {visao === "planilha" && (
-            <PlanilhaAprovacoes
-              aprovacoes={filtrados}
+            <PlanilhaRegistros
+              registros={ordenados}
+              tipo={tipo}
               onAbrir={setEmailAberto}
               onAtualizar={atualizar}
             />
@@ -273,7 +325,8 @@ export default function Painel() {
         {figmaAberto && (
           <ModalFigma
             key="figma"
-            aprovacoes={filtrados}
+            registros={ordenados}
+            tipo={tipo}
             onFechar={() => setFigmaAberto(false)}
           />
         )}
@@ -285,7 +338,7 @@ export default function Painel() {
 function Vazio() {
   return (
     <p className="text-body text-ink-muted py-10 text-center">
-      Nenhuma aprovação com esses filtros.
+      Nenhum registro com esses filtros.
     </p>
   );
 }

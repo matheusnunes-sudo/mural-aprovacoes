@@ -23,13 +23,39 @@ de posts do mural (a maior prova social da empresa).
 - `app/painel/page.tsx` - painel admin (fila, detalhe, checklists)
 - `app/api/corrigir/route.ts` - correcao de depoimento via IA
 - `components/` - componentes do painel (fila, Kanban, planilha, detalhe)
-- `lib/supabase.ts` - cliente, tipos, `ETAPAS` e validacao de email
+- `lib/supabase.ts` - cliente, tipos, `TIPOS`, `ETAPAS`, `MATERIAS`
 - `lib/agrupar.ts` - agrupa os envios do mesmo email em um aluno so
+- `lib/formato.ts` - legendas e ordenacoes que mudam com o tipo
 - `lib/mock.ts` - dados de exemplo (usados quando o Supabase nao esta configurado)
+
+## Dois momentos do ano (o conceito central)
+
+O mural tem duas campanhas por ano, com dados diferentes, e o painel as separa
+em abas — elas nunca se misturam na mesma tela:
+
+1. **Acertos do ENEM** (`tipo: "acerto"`) — semana da prova. Sai o gabarito
+   oficial, o aluno corrige, manda ao expert quantas questoes acertou, e vira
+   post de "X acertos no dia 1 / dia 2", as vezes aberto por materia. **Nao
+   existe curso nem faculdade ainda.** O expert lanca os numeros no proprio
+   painel (o formulario publico nao pede acertos).
+2. **Aprovações** (`tipo: "aprovacao"`) — depois do SISU. O aluno passou, e o
+   post e do curso/faculdade.
+
+O MESMO aluno costuma aparecer nos dois, com o mesmo email: acertos em
+novembro, aprovacao em janeiro. Por isso **filtre por tipo antes de agrupar
+por email** — sao trabalhos diferentes.
+
+O que os dois compartilham: aluno, autorizacao de postagem, selos, etapa
+(pendente -> design pronto -> postado) e depoimento. Por isso vivem na mesma
+tabela, separados pela coluna `tipo`.
+
+Na aba de acertos a ordem padrao e **maior numero de acertos primeiro** — e
+assim que a equipe escolhe quem postar. `agruparPorEmail` NAO reordena nada:
+preserva a ordem que recebe, e quem chama ordena de proposito.
 
 ## Modelo de dados
 
-Cada linha de `aprovacoes` e UM envio, com status e responsavel proprios.
+Cada linha de `aprovacoes` e UM envio, com status proprio.
 O `email` identifica o aluno e nao e unico: se a pessoa mandar um segundo
 depoimento com o mesmo email, vira uma nova linha e o painel mostra os dois
 juntos no mesmo card (`agruparPorEmail`). Nunca deduplique por email no

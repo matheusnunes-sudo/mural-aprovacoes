@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ETAPAS } from "@/lib/supabase";
-import type { Aprovacao, GrupoAluno, StatusAprovacao } from "@/lib/supabase";
+import type { GrupoAluno, Registro, StatusRegistro } from "@/lib/supabase";
+import { legendaRegistro } from "@/lib/formato";
 import { Interruptor } from "./Interruptor";
 import { EditorSelos } from "./EditorSelos";
+import { EditorAcertos } from "./EditorAcertos";
 import { ConfirmarDialogo } from "./ConfirmarDialogo";
 
 function dataCurta(iso: string) {
@@ -22,12 +24,12 @@ export function DetalheAluno({
 }: {
   grupo: GrupoAluno;
   onFechar: () => void;
-  onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
+  onAtualizar: (id: string, patch: Partial<Registro>) => void;
 }) {
   // Qual dos envios do aluno está em revisão. 0 = mais recente.
   const [indice, setIndice] = useState(0);
-  const aprovacao = grupo.aprovacoes[indice] ?? grupo.aprovacoes[0];
-  const varios = grupo.aprovacoes.length > 1;
+  const registro = grupo.registros[indice] ?? grupo.registros[0];
+  const varios = grupo.registros.length > 1;
 
   const reduzMovimento = useReducedMotion();
   const materializar = reduzMovimento
@@ -57,7 +59,7 @@ export function DetalheAluno({
       onClick={(e) => e.target === e.currentTarget && onFechar()}
       role="dialog"
       aria-modal
-      aria-label={`Depoimentos de ${grupo.nome}`}
+      aria-label={`Registros de ${grupo.nome}`}
     >
       <motion.div
         className="card w-full max-w-2xl p-5 shadow-pop sm:p-7"
@@ -72,7 +74,7 @@ export function DetalheAluno({
           <div className="min-w-0">
             <h2 className="text-title">{grupo.nome}</h2>
             <p className="text-caption text-ink-soft mt-0.5 truncate">
-              {aprovacao.curso} · {aprovacao.faculdade}
+              {legendaRegistro(registro)}
             </p>
             <p className="text-caption text-ink-muted truncate">{grupo.email}</p>
           </div>
@@ -100,13 +102,13 @@ export function DetalheAluno({
         {varios && (
           <div className="mb-5">
             <p className="text-caption text-ink-muted mb-2">
-              Este aluno enviou {grupo.aprovacoes.length} depoimentos com o
-              mesmo e-mail.
+              Este aluno enviou {grupo.registros.length} vezes com o mesmo
+              e-mail.
             </p>
             <div className="flex gap-1 overflow-x-auto rounded-pill bg-surface-sunken p-1">
-              {grupo.aprovacoes.map((a, i) => (
+              {grupo.registros.map((r, i) => (
                 <button
-                  key={a.id}
+                  key={r.id}
                   onClick={() => setIndice(i)}
                   className={`relative shrink-0 whitespace-nowrap rounded-pill px-3.5 py-1.5 text-label transition-colors ${
                     i === indice ? "text-ink" : "text-ink-soft hover:text-ink"
@@ -120,7 +122,8 @@ export function DetalheAluno({
                     />
                   )}
                   <span className="relative">
-                    {dataCurta(a.criado_em)} · {a.faculdade}
+                    {dataCurta(r.criado_em)} ·{" "}
+                    {r.tipo === "aprovacao" ? r.faculdade : "acertos"}
                   </span>
                 </button>
               ))}
@@ -129,9 +132,9 @@ export function DetalheAluno({
         )}
 
         {/* key remonta a revisão ao trocar de envio, zerando o estado local. */}
-        <RevisaoDepoimento
-          key={aprovacao.id}
-          aprovacao={aprovacao}
+        <RevisaoRegistro
+          key={registro.id}
+          registro={registro}
           onFechar={onFechar}
           onAtualizar={onAtualizar}
         />
@@ -140,17 +143,17 @@ export function DetalheAluno({
   );
 }
 
-function RevisaoDepoimento({
-  aprovacao,
+function RevisaoRegistro({
+  registro,
   onFechar,
   onAtualizar,
 }: {
-  aprovacao: Aprovacao;
+  registro: Registro;
   onFechar: () => void;
-  onAtualizar: (id: string, patch: Partial<Aprovacao>) => void;
+  onAtualizar: (id: string, patch: Partial<Registro>) => void;
 }) {
   const [corrigido, setCorrigido] = useState(
-    aprovacao.depoimento_corrigido || ""
+    registro.depoimento_corrigido || ""
   );
   const [editando, setEditando] = useState(false);
   const [carregando, setCarregando] = useState(false);
@@ -164,7 +167,7 @@ function RevisaoDepoimento({
       const res = await fetch("/api/corrigir", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ depoimento: aprovacao.depoimento_original }),
+        body: JSON.stringify({ depoimento: registro.depoimento_original }),
       });
       const json = await res.json();
       if (json.corrigido) {
@@ -178,7 +181,7 @@ function RevisaoDepoimento({
 
   // Correção automática ao abrir, se ainda não houver versão corrigida.
   useEffect(() => {
-    if (!aprovacao.depoimento_corrigido) corrigir();
+    if (!registro.depoimento_corrigido) corrigir();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -188,11 +191,11 @@ function RevisaoDepoimento({
   }, [editando]);
 
   function salvar() {
-    onAtualizar(aprovacao.id, { depoimento_corrigido: corrigido });
+    onAtualizar(registro.id, { depoimento_corrigido: corrigido });
     onFechar();
   }
 
-  const autorizado = aprovacao.autoriza_postagem;
+  const autorizado = registro.autoriza_postagem;
 
   return (
     <>
@@ -206,9 +209,7 @@ function RevisaoDepoimento({
       >
         <div className="min-w-0">
           <p className={`text-label ${autorizado ? "" : "text-danger-fg"}`}>
-            {autorizado
-              ? "Autoriza a publicação"
-              : "Não autoriza a publicação"}
+            {autorizado ? "Autoriza a publicação" : "Não autoriza a publicação"}
           </p>
           <p
             className={`text-caption mt-0.5 ${
@@ -217,7 +218,7 @@ function RevisaoDepoimento({
           >
             {autorizado
               ? "Pode virar card e ir para as redes."
-              : "Não produza design para este depoimento."}
+              : "Não produza design para este registro."}
           </p>
         </div>
         <Interruptor
@@ -229,10 +230,20 @@ function RevisaoDepoimento({
         />
       </div>
 
+      {/* Só na semana do ENEM: o expert lança aqui o que o aluno mandou. */}
+      {registro.tipo === "acerto" && (
+        <div className="mb-4">
+          <EditorAcertos
+            acertos={registro.acertos}
+            onMudar={(acertos) => onAtualizar(registro.id, { acertos })}
+          />
+        </div>
+      )}
+
       <div className="mb-5">
         <EditorSelos
-          selos={aprovacao.selos}
-          onMudar={(selos) => onAtualizar(aprovacao.id, { selos })}
+          selos={registro.selos}
+          onMudar={(selos) => onAtualizar(registro.id, { selos })}
         />
       </div>
 
@@ -240,10 +251,10 @@ function RevisaoDepoimento({
         <span className="text-label text-ink-soft mb-1.5 block">Status</span>
         <select
           className="field sm:w-auto"
-          value={aprovacao.status}
+          value={registro.status}
           onChange={(e) =>
-            onAtualizar(aprovacao.id, {
-              status: e.target.value as StatusAprovacao,
+            onAtualizar(registro.id, {
+              status: e.target.value as StatusRegistro,
             })
           }
         >
@@ -273,7 +284,7 @@ function RevisaoDepoimento({
         <div>
           <p className="text-caption text-ink-muted mb-1.5">Original</p>
           <div className="text-body text-ink-soft rounded-control bg-surface-sunken p-3.5">
-            {aprovacao.depoimento_original}
+            {registro.depoimento_original}
           </div>
         </div>
 
@@ -333,13 +344,13 @@ function RevisaoDepoimento({
         }
         descricao={
           autorizado
-            ? `${aprovacao.nome} deixará de aparecer para produção de design e não deve virar post.`
-            : `Confirme que ${aprovacao.nome} autorizou publicar nome, foto e depoimento. Marcar sem autorização real expõe o aluno.`
+            ? `${registro.nome} deixará de aparecer para produção de design e não deve virar post.`
+            : `Confirme que ${registro.nome} autorizou publicar nome, foto e depoimento. Marcar sem autorização real expõe o aluno.`
         }
         textoConfirmar={autorizado ? "Sim, remover" : "Sim, autorizar"}
         perigo={!autorizado}
         onConfirmar={() => {
-          onAtualizar(aprovacao.id, { autoriza_postagem: !autorizado });
+          onAtualizar(registro.id, { autoriza_postagem: !autorizado });
           setConfirmandoAutorizacao(false);
         }}
         onCancelar={() => setConfirmandoAutorizacao(false)}
