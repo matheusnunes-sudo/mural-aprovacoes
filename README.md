@@ -26,6 +26,16 @@ Atencao: os campos de foto e comprovante sao demonstracao. O arquivo aparece
 na tela mas nao e salvo em lugar nenhum ate o Supabase Storage entrar (ver
 roadmap no `CLAUDE.md`).
 
+## Ver o painel cheio (dados de demonstracao)
+
+```bash
+NEXT_PUBLIC_DEMO_VOLUME=80 npm run dev
+```
+
+Completa os dados de exemplo ate 80 aprovacoes (e ~100 acertos), para ver como
+o painel se comporta com volume real. Sem a variavel, ficam so os casos
+curados. Na Vercel, e a mesma variavel em Settings -> Environment Variables.
+
 ## Rodar localmente
 
 ```bash

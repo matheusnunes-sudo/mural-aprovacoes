@@ -96,9 +96,10 @@ export function PlanilhaRegistros({
         </button>
       </div>
 
-      {/* A tabela rola dentro do próprio container; a página nunca rola na
-          horizontal. */}
-      <div className="overflow-x-auto rounded-card border border-line bg-surface-card">
+      {/* A tabela rola dentro do proprio container, nos dois eixos: a pagina
+          nunca rola na horizontal, e com dezenas de linhas o cabecalho
+          continua visivel (sticky) em vez de sumir no scroll. */}
+      <div className="max-h-[70vh] overflow-auto rounded-card border border-line bg-surface-card">
         <table className="w-full min-w-[58rem] border-collapse">
           <thead>
             <tr className="bg-surface-sunken">
@@ -106,7 +107,7 @@ export function PlanilhaRegistros({
                 <th
                   key={c}
                   scope="col"
-                  className="text-caption text-ink-soft whitespace-nowrap border-b border-line px-3 py-2.5 text-left font-medium"
+                  className="text-caption text-ink-soft sticky top-0 z-10 whitespace-nowrap border-b border-line bg-surface-sunken px-3 py-2.5 text-left font-medium"
                 >
                   {c}
                 </th>

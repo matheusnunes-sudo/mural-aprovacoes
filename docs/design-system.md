@@ -132,6 +132,21 @@ Usamos `framer-motion` para o que e tocado ou arrastado; CSS puro
 6. **Foco visivel.** `:focus-visible` tem anel proprio na cor da marca. Nunca
    remover sem repor: e a unica pista de posicao para quem navega por teclado.
 
+## Volume
+
+Layout que funciona com 6 registros pode quebrar com 80. Regras que sairam do
+teste de volume:
+
+- **Coluna de Kanban rola por dentro** (`max-h-[60vh] overflow-y-auto`), com o
+  cabecalho da etapa fora do container que rola. Sem isso a coluna cresce
+  indefinidamente, o cabecalho sai da tela e o arrasto fica impraticavel.
+- **Tabela densa rola por dentro nos dois eixos** com `<th>` em
+  `sticky top-0`. Cabecalho que desaparece no scroll torna 80 linhas ilegiveis.
+- **Lista longa e paginada** em lotes (25), com o restante num botao. Dez telas
+  de scroll sem ponto de parada nao se navega.
+- Rode com `NEXT_PUBLIC_DEMO_VOLUME=80` antes de considerar uma visualizacao
+  pronta.
+
 ## Responsividade
 
 Mobile-first. Testado em 375, 768 e 1280.

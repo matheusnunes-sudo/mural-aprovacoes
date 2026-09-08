@@ -115,6 +115,20 @@ aluno que nao autorizou. Para mudar, abra o detalhe e confirme.
 Mesma logica no depoimento corrigido: ele nasce travado e so vira editavel
 depois de clicar no lapis. Texto ja revisado nao deve mudar sem intencao.
 
+## Volume de demonstracao
+
+`NEXT_PUBLIC_DEMO_VOLUME=80` completa os dados mock com registros gerados
+(`lib/gerar-exemplos.ts`) para ver o painel cheio. Sem a variavel, ficam so os
+casos curados. O gerador e **deterministico** (PRNG com semente fixa) de
+proposito: o mesmo dataset em todo build, senao print e bug nao sao
+reproduziveis. Nada disso e usado quando o Supabase esta configurado.
+
+Testar com volume nao e capricho — 80 registros revelaram tres defeitos que 6
+escondiam, todos corrigidos: coluna do Kanban de 4000px que levava o cabecalho
+da etapa para fora da tela, lista com 10 telas de scroll, e cabecalho da
+planilha desaparecendo no scroll. **Ao criar visualizacao nova, teste com
+volume antes de considerar pronta.**
+
 ## Integracao com o Figma
 
 `components/ModalFigma.tsx` e um **MVP visual**: conexao, arquivo e geracao

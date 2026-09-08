@@ -79,7 +79,11 @@ export function KanbanRegistros({
               </span>
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* Scroll interno na coluna: com dezenas de cards, uma coluna
+                de 4000px levava o cabecalho da etapa para fora da tela e
+                tornava o arrasto entre colunas impraticavel. O quadro
+                inteiro cabe em uma tela e cada coluna rola por dentro. */}
+            <div className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto pr-1">
               {daEtapa.map((r) => {
                 const materias = legendaMaterias(r);
                 return (

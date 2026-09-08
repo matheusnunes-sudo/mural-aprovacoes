@@ -47,6 +47,10 @@ export default function Painel() {
   const [fStatus, setFStatus] = useState("");
   const [fAutoriza, setFAutoriza] = useState("");
   const [ordem, setOrdem] = useState<"acertos" | "recentes">("acertos");
+  // Quantos alunos a lista mostra de uma vez. Com 80 registros a pagina
+  // passava de 9 telas de scroll; em lote de 25 a leitura fica possivel e
+  // quem precisa de mais clica.
+  const [limite, setLimite] = useState(25);
   const reduzMovimento = useReducedMotion();
 
   useEffect(() => {
@@ -115,6 +119,7 @@ export default function Painel() {
     setFCurso("");
     setFFac("");
     setEmailAberto(null);
+    setLimite(25);
   }
 
   function entrar() {
@@ -278,7 +283,7 @@ export default function Painel() {
 
           {visao === "lista" && (
             <div className="grid gap-3">
-              {grupos.map((g) => (
+              {grupos.slice(0, limite).map((g) => (
                 <CardRegistro
                   key={g.email}
                   grupo={g}
@@ -286,6 +291,15 @@ export default function Painel() {
                 />
               ))}
               {grupos.length === 0 && <Vazio />}
+
+              {grupos.length > limite && (
+                <button
+                  className="btn-ghost mt-1 w-full py-3"
+                  onClick={() => setLimite((l) => l + 25)}
+                >
+                  Mostrar mais 25 · {grupos.length - limite} restantes
+                </button>
+              )}
             </div>
           )}
 

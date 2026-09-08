@@ -1,4 +1,5 @@
 import type { Registro } from "./supabase";
+import { gerarAprovacoes, gerarAcertos } from "./gerar-exemplos";
 
 // Dados de exemplo. Substituidos automaticamente pelos dados reais
 // assim que o Supabase estiver configurado.
@@ -13,7 +14,7 @@ import type { Registro } from "./supabase";
 // - Carla mandou so o total do dia 1, sem abrir por materia — acontece.
 // Os depoimentos "original" ficam com os erros de digitacao de proposito:
 // e o que a correcao por IA existe para arrumar.
-export const registrosMock: Registro[] = [
+const registrosCurados: Registro[] = [
   // --- Acertos do ENEM (semana da prova) --------------------------------
   {
     id: "a1",
@@ -213,3 +214,44 @@ export const registrosMock: Registro[] = [
     criado_em: "2027-01-26T16:40:00Z",
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Volume de demonstracao.
+//
+// Os registros acima sao CURADOS: cada um existe para mostrar um caso
+// especifico (dois envios do mesmo email, quem nao autoriza, acertos
+// parciais). Eles vem sempre.
+//
+// `NEXT_PUBLIC_DEMO_VOLUME` completa a lista com dados gerados, para ver o
+// painel cheio. Ex.: 80 => 80 aprovacoes no total (curadas + geradas).
+// Sem a variavel, o painel fica so com os casos curados.
+// Isso e dado de DEMONSTRACAO: quando o Supabase estiver configurado, nada
+// disso e usado.
+// ---------------------------------------------------------------------------
+const VOLUME = Number(process.env.NEXT_PUBLIC_DEMO_VOLUME ?? 0);
+
+function montarMock(): Registro[] {
+  if (!Number.isFinite(VOLUME) || VOLUME <= 0) return registrosCurados;
+
+  const emails = new Set(registrosCurados.map((r) => r.email));
+  const curadasAprovacoes = registrosCurados.filter(
+    (r) => r.tipo === "aprovacao"
+  ).length;
+  const curadosAcertos = registrosCurados.filter(
+    (r) => r.tipo === "acerto"
+  ).length;
+
+  // A semana do ENEM tem mais gente respondendo que a temporada de aprovacao
+  // (todo mundo corrige a prova; nem todo mundo passa), por isso a aba de
+  // acertos recebe um volume maior.
+  const alvoAprovacoes = Math.max(0, VOLUME - curadasAprovacoes);
+  const alvoAcertos = Math.max(0, Math.round(VOLUME * 1.25) - curadosAcertos);
+
+  return [
+    ...registrosCurados,
+    ...gerarAprovacoes(alvoAprovacoes, emails),
+    ...gerarAcertos(alvoAcertos, emails),
+  ];
+}
+
+export const registrosMock: Registro[] = montarMock();
