@@ -124,11 +124,15 @@ Usamos `framer-motion` para o que e tocado ou arrastado; CSS puro
    teclado e e fragil no toque. O Kanban move card por botoes `‹ ›`; o
    arrasto e um extra. Toda interacao por gesto precisa de um equivalente
    clicavel.
-8. **`AnimatePresence` exige `key` no filho direto** — e, para dialogo
-   aninhado dentro de outro modal, nao use `AnimatePresence`: use
-   `if (!aberto) return null`. Ja aconteceu de o no ficar montado e
-   invisivel por cima da tela, engolindo todos os cliques
-   (ver `ConfirmarDialogo`).
+8. **Nao use `AnimatePresence` em menu, dropdown ou dialogo.** Use render
+   condicional (`if (!aberto) return null`) com animacao so de entrada.
+   Aconteceu duas vezes: o `AnimatePresence` termina a animacao de saida mas
+   nao desmonta o no, que fica invisivel por cima do conteudo com
+   `pointer-events: auto` e engole todos os cliques. `key` no filho direto
+   **nao** resolve. Ver `ConfirmarDialogo`, `Dropdown` e `ExportarCsv`.
+   Sintoma: `aria-expanded="false"` mas o no ainda no DOM.
+   `AnimatePresence` continua valido para o que e filho direto da pagina
+   (modal de detalhe, modal do Figma) — ali funciona.
 6. **Foco visivel.** `:focus-visible` tem anel proprio na cor da marca. Nunca
    remover sem repor: e a unica pista de posicao para quem navega por teclado.
 

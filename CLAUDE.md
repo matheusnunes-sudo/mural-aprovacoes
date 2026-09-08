@@ -115,6 +115,20 @@ aluno que nao autorizou. Para mudar, abra o detalhe e confirme.
 Mesma logica no depoimento corrigido: ele nasce travado e so vira editavel
 depois de clicar no lapis. Texto ja revisado nao deve mudar sem intencao.
 
+## Filtros e exportacao
+
+Os filtros usam `components/Dropdown.tsx` (pilula com icone + menu proprio),
+nao `<select>` nativo: o nativo nao aceita icone, ignora os tokens de tema e
+abre menu do sistema operacional. O Dropdown ja cobre teclado (setas,
+Home/End, Escape), clique fora e devolucao de foco — reaproveite em vez de
+criar outro.
+
+A exportacao (`components/ExportarCsv.tsx`) leva quantidade escolhida e
+exporta **os primeiros N na ordem da tela**, que ja e a ordem util (mais
+acertos na semana do ENEM, mais recentes nas aprovacoes). As colunas vem de
+`lib/csv.ts`, as MESMAS da tabela — se divergirem, o arquivo exportado deixa
+de bater com o que a equipe ve.
+
 ## Volume de demonstracao
 
 `NEXT_PUBLIC_DEMO_VOLUME=80` completa os dados mock com registros gerados

@@ -1,5 +1,5 @@
-import { ETAPAS } from "@/lib/supabase";
 import type { StatusRegistro } from "@/lib/supabase";
+import { tituloEtapa } from "@/lib/etapas";
 
 // Semaforo unico do processo: vermelho parado, amarelo em andamento, verde
 // concluido. As mesmas cores pintam o selo, a coluna do Kanban e a linha da
@@ -31,9 +31,9 @@ export const CORES_ETAPA: Record<
   },
 };
 
-export function tituloEtapa(status: StatusRegistro) {
-  return ETAPAS.find((e) => e.id === status)?.titulo ?? status;
-}
+// Reexporta de lib/etapas para nao existirem duas fontes da verdade:
+// lib/csv.ts precisa do titulo e nao pode importar de um componente.
+export { tituloEtapa } from "@/lib/etapas";
 
 export function SeloStatus({ status }: { status: StatusRegistro }) {
   return (

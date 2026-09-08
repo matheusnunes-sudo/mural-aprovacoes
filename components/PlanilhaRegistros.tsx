@@ -2,47 +2,18 @@
 
 import { ETAPAS, MATERIAS, totalAcertos } from "@/lib/supabase";
 import type { Registro, StatusRegistro, TipoRegistro } from "@/lib/supabase";
+import { colunasTabela, dataCurta } from "@/lib/csv";
 import { SeloAutorizacao } from "./SeloAutorizacao";
-import { CORES_ETAPA, tituloEtapa } from "./SeloStatus";
-
-function dataHora(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-// Escapa um valor para CSV: aspas dobradas e o campo inteiro entre aspas.
-function celulaCsv(valor: string | number | boolean) {
-  return `"${String(valor).replace(/"/g, '""')}"`;
-}
-
-// As colunas do meio mudam com o tipo: aprovação mostra curso/faculdade,
-// acerto mostra o placar da prova.
-function colunas(tipo: TipoRegistro): string[] {
-  const meio =
-    tipo === "aprovacao"
-      ? ["Curso", "Faculdade"]
-      : ["Dia 1", "Dia 2", "Total", ...MATERIAS.map((m) => m.curto)];
-  return ["Nome", "E-mail", ...meio, "Status", "Autoriza post", "Selos", "Enviado em"];
-}
-
-function celulasMeio(r: Registro): (string | number)[] {
-  if (r.tipo === "aprovacao") return [r.curso, r.faculdade];
-  const t = totalAcertos(r.acertos);
-  return [
-    r.acertos?.dia1 ?? "",
-    r.acertos?.dia2 ?? "",
-    t ?? "",
-    ...MATERIAS.map((m) => r.acertos?.materias[m.id] ?? ""),
-  ];
-}
+import { CORES_ETAPA } from "./SeloStatus";
+import { ExportarCsv } from "./ExportarCsv";
 
 // Visualizacao densa, estilo planilha. Só o status é editável direto na
 // linha. A autorização NÃO é: ela é a resposta do aluno, e um clique errado
 // numa grade densa exporia alguém que não autorizou. Para mudá-la, abra o
 // detalhe (clique no nome) e confirme.
+//
+// As colunas vêm de lib/csv.ts, as mesmas do arquivo exportado — se
+// divergissem, o CSV deixaria de bater com o que a equipe vê na tela.
 export function PlanilhaRegistros({
   registros,
   tipo,
@@ -54,35 +25,7 @@ export function PlanilhaRegistros({
   onAbrir: (email: string) => void;
   onAtualizar: (id: string, patch: Partial<Registro>) => void;
 }) {
-  const cabecalhos = colunas(tipo);
-
-  function exportarCsv() {
-    const linhas = [
-      cabecalhos.map(celulaCsv).join(","),
-      ...registros.map((r) =>
-        [
-          celulaCsv(r.nome),
-          celulaCsv(r.email),
-          ...celulasMeio(r).map(celulaCsv),
-          celulaCsv(tituloEtapa(r.status)),
-          celulaCsv(r.autoriza_postagem ? "Sim" : "Não"),
-          celulaCsv(r.selos.join("; ")),
-          celulaCsv(dataHora(r.criado_em)),
-        ].join(",")
-      ),
-    ].join("\n");
-
-    // BOM no inicio para o Excel abrir os acentos corretamente.
-    const blob = new Blob([`﻿${linhas}`], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${tipo}s-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
+  const cabecalhos = colunasTabela(tipo);
 
   return (
     <div>
@@ -91,9 +34,7 @@ export function PlanilhaRegistros({
           {registros.length} registro{registros.length === 1 ? "" : "s"} ·
           clique no nome para abrir
         </p>
-        <button className="btn-ghost py-2" onClick={exportarCsv}>
-          Exportar CSV
-        </button>
+        <ExportarCsv registros={registros} tipo={tipo} />
       </div>
 
       {/* A tabela rola dentro do proprio container, nos dois eixos: a pagina
@@ -190,7 +131,7 @@ export function PlanilhaRegistros({
                   )}
                 </td>
                 <td className="text-caption text-ink-soft whitespace-nowrap px-3 py-2 tabular-nums">
-                  {dataHora(r.criado_em)}
+                  {dataCurta(r.criado_em)}
                 </td>
               </tr>
             ))}

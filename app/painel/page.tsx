@@ -15,6 +15,16 @@ import { Checklists } from "@/components/Checklists";
 import { KanbanRegistros } from "@/components/KanbanRegistros";
 import { PlanilhaRegistros } from "@/components/PlanilhaRegistros";
 import { ModalFigma } from "@/components/ModalFigma";
+import { Dropdown } from "@/components/Dropdown";
+import type { OpcaoDropdown } from "@/components/Dropdown";
+import {
+  IconeCurso,
+  IconeFaculdade,
+  IconeStatus,
+  IconeOlho,
+  IconeOrdenar,
+  IconeFiltro,
+} from "@/components/Icones";
 
 // Senha simples só para demonstração (V1). A troca por auth real do
 // Supabase está documentada no README como próximo passo.
@@ -167,6 +177,31 @@ export default function Painel() {
 
   const rotuloTipo = TIPOS.find((t) => t.id === tipo)!;
 
+  // Opcoes dos filtros. A primeira de cada um e sempre o "sem filtro", com
+  // rotulo que descreve o conjunto inteiro — assim o gatilho fechado sempre
+  // diz o que esta acontecendo, sem precisar abrir.
+  const opcoesCurso: OpcaoDropdown[] = [
+    { valor: "", rotulo: "Todos os cursos" },
+    ...cursos.map((c) => ({ valor: c, rotulo: c })),
+  ];
+  const opcoesFaculdade: OpcaoDropdown[] = [
+    { valor: "", rotulo: "Toda faculdade" },
+    ...faculdades.map((f) => ({ valor: f, rotulo: f })),
+  ];
+  const opcoesStatus: OpcaoDropdown[] = [
+    { valor: "", rotulo: "Todos os status" },
+    ...ETAPAS.map((e) => ({ valor: e.id, rotulo: e.titulo })),
+  ];
+  const opcoesAutoriza: OpcaoDropdown[] = [
+    { valor: "", rotulo: "Autoriza post: todos" },
+    { valor: "sim", rotulo: "Autoriza post: sim" },
+    { valor: "nao", rotulo: "Autoriza post: não" },
+  ];
+  const opcoesOrdem: OpcaoDropdown[] = [
+    { valor: "acertos", rotulo: "Mais acertos primeiro" },
+    { valor: "recentes", rotulo: "Mais recentes primeiro" },
+  ];
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <PainelHeader
@@ -214,71 +249,73 @@ export default function Painel() {
             </button>
           </div>
 
+          {/* Barra de filtros: pilulas com icone e menu proprio, no lugar
+              do <select> nativo. A divisoria separa "o que eu vejo"
+              (filtros) de "o que eu levo" (exportar), como no padrao de
+              toolbar da referencia. */}
           <div className="mb-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
-            <span className="text-label text-ink-soft sm:mr-1">Filtros</span>
+            <span className="text-label text-ink-soft flex items-center gap-1.5 sm:mr-1">
+              <IconeFiltro />
+              Filtros
+            </span>
 
             {tipo === "aprovacao" ? (
               <>
-                <select
-                  className="field sm:w-auto"
-                  value={fCurso}
-                  onChange={(e) => setFCurso(e.target.value)}
-                  aria-label="Filtrar por curso"
-                >
-                  <option value="">Todos os cursos</option>
-                  {cursos.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-                <select
-                  className="field sm:w-auto"
-                  value={fFac}
-                  onChange={(e) => setFFac(e.target.value)}
-                  aria-label="Filtrar por faculdade"
-                >
-                  <option value="">Toda faculdade</option>
-                  {faculdades.map((f) => (
-                    <option key={f}>{f}</option>
-                  ))}
-                </select>
+                <Dropdown
+                  rotulo="Curso"
+                  icone={<IconeCurso />}
+                  valor={fCurso}
+                  opcoes={opcoesCurso}
+                  onMudar={setFCurso}
+                />
+                <Dropdown
+                  rotulo="Faculdade"
+                  icone={<IconeFaculdade />}
+                  valor={fFac}
+                  opcoes={opcoesFaculdade}
+                  onMudar={setFFac}
+                />
               </>
             ) : (
-              <select
-                className="field sm:w-auto"
-                value={ordem}
-                onChange={(e) =>
-                  setOrdem(e.target.value as "acertos" | "recentes")
-                }
-                aria-label="Ordenar registros"
-              >
-                <option value="acertos">Mais acertos primeiro</option>
-                <option value="recentes">Mais recentes primeiro</option>
-              </select>
+              <Dropdown
+                rotulo="Ordenar"
+                icone={<IconeOrdenar />}
+                valor={ordem}
+                opcoes={opcoesOrdem}
+                onMudar={(v) => setOrdem(v as "acertos" | "recentes")}
+              />
             )}
 
-            <select
-              className="field sm:w-auto"
-              value={fStatus}
-              onChange={(e) => setFStatus(e.target.value)}
-              aria-label="Filtrar por status"
-            >
-              <option value="">Todos os status</option>
-              {ETAPAS.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.titulo}
-                </option>
-              ))}
-            </select>
-            <select
-              className="field sm:w-auto"
-              value={fAutoriza}
-              onChange={(e) => setFAutoriza(e.target.value)}
-              aria-label="Filtrar por autorização de postagem"
-            >
-              <option value="">Autoriza post: todos</option>
-              <option value="sim">Autoriza post: sim</option>
-              <option value="nao">Autoriza post: não</option>
-            </select>
+            <Dropdown
+              rotulo="Status"
+              icone={<IconeStatus />}
+              valor={fStatus}
+              opcoes={opcoesStatus}
+              onMudar={setFStatus}
+            />
+            <Dropdown
+              rotulo="Autorização de postagem"
+              icone={<IconeOlho />}
+              valor={fAutoriza}
+              opcoes={opcoesAutoriza}
+              onMudar={setFAutoriza}
+            />
+
+            {(fCurso || fFac || fStatus || fAutoriza) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFCurso("");
+                  setFFac("");
+                  setFStatus("");
+                  setFAutoriza("");
+                  setLimite(25);
+                }}
+                className="btn-quiet py-2 text-caption"
+              >
+                Limpar filtros
+              </button>
+            )}
           </div>
 
           {visao === "lista" && (
